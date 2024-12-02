@@ -31,22 +31,21 @@ def count_safes(deltas):
 def dampen_reports(reports, deltas):
     # This could be made more efficient by disconsidering reports that have 2+ problems in their deltas
     # (that is, 0s or just one different sign), since those can NEVER be fixed. Out of the ones that
-    # have just ONE problem, there's a chance (still not guaranteed)
-    # Also, there's probably many ways to improve efficiency by analyzing the delta instead of trying
-    # by brute force: adding pairs, for instance, might work.
+    # have just ONE problem, there's a chance (still not guaranteed) to fix them. Also, there's probably
+    # many ways to improve efficiency by analyzing the delta instead of trying by brute force: adding pairs,
+    # for instance, might work.
     for index, (report, delta) in enumerate(zip(reports, deltas)):
         if not is_safe(delta):
-            show_reports([report], [delta])
+            # show_reports([report], [delta])
             for i in range(len(report)):
-                new_report = list(report)
-                new_report.pop(i)
+                new_report = report[:i] + report[i+1:]
                 new_delta = [new_report[i+1] - new_report[i] for i in range(len(new_report) - 1)]
                 if is_safe(new_delta):
-                    show_reports([new_report], [new_delta])
+                    # show_reports([new_report], [new_delta])
                     reports[index] = new_report
                     deltas[index] = new_delta
                     break
-            print()
+            # print()
 
 def show_reports(reports, deltas):
     for report, delta in zip(reports, deltas):
