@@ -4,5 +4,5 @@ H => HO
 H => OH
 O => HH
 
-HOH
-3
+HOHOHO
+6
