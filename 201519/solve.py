@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
+"""
+https://adventofcode.com/2015/day/19
+"""
 import argparse
 
 
@@ -8,6 +10,8 @@ def main(args):
     subs, molecule = read_lines(args.filename)
     print(f'Molecule: {molecule}\n')
     print(f'Calibration: {len(calibrate(molecule, subs))}')
+
+    recipes = find_
 
 def read_lines(filename):
     # subs = {}
