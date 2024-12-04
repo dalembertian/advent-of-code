@@ -46,7 +46,7 @@ def generate_strings_from_other_diagonals(lines):
     return generate_strings_from_diagonals(inverted_lines)
 
 def find_x_word(word, lines):
-    # First, replace MAS by its "marked" version, "M.S" on the first half of diagonals
+    # First, replace MAS by its "marked" version, "M-S" on the first half of diagonals
     marked_word = word[:len(word)//2] + '-' + word[len(word)//2+1:]
     strings = generate_strings_from_diagonals(lines)
     strings = mark_x_word(word, marked_word, strings)
