@@ -9,11 +9,11 @@ def main(args):
     rules, pages = read_lines(args.filename)
 
     correct_sum, incorrect_pages = check_pages(pages, rules)
-    print(f'Part 1 - correct pages sum is: {correct_sum}')
+    print(f'Part 1 - correct pages sum is: {correct_sum}, incorrect pages remaining: {len(incorrect_pages)}')
 
     corrected_pages = fix_pages(incorrect_pages, rules)
     correct_sum, incorrect_pages = check_pages(corrected_pages, rules)
-    print(f'Part 2 - corrected pages sum is: {correct_sum}, incorrect pages remaining: {len(incorrect_pages)}')
+    print(f'Part 2 - correctED pages sum is: {correct_sum}, incorrect pages remaining: {len(incorrect_pages)}')
 
 def read_lines(filename):
     rules = {}
