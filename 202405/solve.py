@@ -7,10 +7,13 @@ import re
 
 def main(args):
     rules, pages = read_lines(args.filename)
-    # print(rules)
-    # print(pages)
 
-    print(f'Part 1 - correct pages sum is: {sum(check_page(page, rules) for page in pages)}')
+    correct_sum, incorrect_pages = check_pages(pages, rules)
+    print(f'Part 1 - correct pages sum is: {correct_sum}')
+
+    corrected_pages = fix_pages(incorrect_pages, rules)
+    correct_sum, incorrect_pages = check_pages(corrected_pages, rules)
+    print(f'Part 2 - corrected pages sum is: {correct_sum}, incorrect pages remaining: {len(incorrect_pages)}')
 
 def read_lines(filename):
     rules = {}
@@ -27,11 +30,25 @@ def read_lines(filename):
                 pages.append(line.strip().split(','))
     return rules, pages
 
-def check_page(page, rules):
+def check_pages(pages, rules):
+    correct_sum = 0
+    incorrect_pages = []
+    for page in pages:
+        page_sum = check_page(page, rules)
+        if page_sum:
+            correct_sum += page_sum
+        else:
+            incorrect_pages.append(page)
+    return correct_sum, incorrect_pages
+
+def check_page(page, rules, fix=False):
     pairs = generate_pairs(page)
     for i, j in pairs:
         for rule in rules.get(i, []):
             if j in rule:
+                if fix:
+                    k, v = page.index(i), page.index(j)
+                    page[k], page[v] = page[v], page[k]
                 return 0
     return int(page[len(page)//2])
 
@@ -40,6 +57,14 @@ def generate_pairs(page):
     for i in range(len(page)-1):
         pairs.extend([ (page[i], j) for j in page[i+1:] ])
     return pairs
+
+def fix_pages(pages, rules):
+    return [fix_page(page, rules) for page in pages]
+
+def fix_page(page, rules):
+    while not check_page(page, rules, fix=True):
+        pass
+    return page
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
