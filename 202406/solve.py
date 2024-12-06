@@ -12,10 +12,21 @@ MOVEMENTS = {
 }
 
 def main(args):
-    maze = read_lines(args.filename)
+    original_maze = read_lines(args.filename)
 
-    walk_guard(maze)
-    print(f"Part 1 - Guard's route lenght is: {len(find_element('X', maze))}")
+    # Part 1
+    maze = [row[:] for row in original_maze]
+    x, y = find_element('^', maze)[0]
+    loop = walk_guard(maze)
+    path = find_element('X', maze)
+    print(f"Part 1 - Guard's route lenght is: {len(path)}, and he {'IS' if loop else 'is NOT'} in loop.")
+
+    # Part 2
+    # Consider all spots where guard has been, except initial and next-to-initial position
+    path.remove((x,y))
+    path.remove((x-1, y))
+    loops = try_more_obstacles(path, original_maze)
+    print(f"Part 2 - Tried {len(path)} positions for obstacles, and guard gets in loop in {loops} of them")
 
 def read_lines(filename):
     maze = []
@@ -36,14 +47,16 @@ def find_element(symbol, maze):
     return found
 
 def walk_guard(maze):
-    pos = find_element('^', maze)[0]
+    direction = '^'
+    x, y = find_element(direction, maze)[0]
+    visited = {}
     maxx, maxy = len(maze[0])-1, len(maze)-1
-    while 0 < pos[0] < maxx and 0 < pos[1] < maxy:
-        pos = step_guard(pos, maze)
-    print_maze(maze)
+    while 0 < x < maxx and 0 < y < maxy and direction not in visited.setdefault((x,y), []):
+        visited[(x,y)].append(direction)
+        x, y, direction = step_guard((x,y), maze)
+    return direction in visited.get((x,y), [])
 
 def step_guard(pos, maze):
-    # returns new pos, marking step done
     x, y = pos
     direction = maze[x][y]
     deltax, deltay, turn = MOVEMENTS[direction]
@@ -52,7 +65,17 @@ def step_guard(pos, maze):
         deltax, deltay, turn = MOVEMENTS[turn]
     maze[x][y] = 'X'
     maze[x+deltax][y+deltay] = direction
-    return x+deltax, y+deltay
+    return x+deltax, y+deltay, direction
+
+    print(f"Part 2 - Tried {len(path)} positions for obstacles, and guard gets in loop in {loops} of them")
+
+def try_more_obstacles(path, original_maze):
+    loops = 0
+    for x, y in path:
+        maze = [row[:] for row in original_maze]
+        maze[x][y] = '#'
+        loops += 1 if walk_guard(maze) else 0
+    return loops
 
 def print_maze(maze):
     for i, line in enumerate(maze):
