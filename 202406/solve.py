@@ -3,16 +3,6 @@
 
 import argparse
 
-GUARD, OPEN, OBSTACLE, PASSED, OUTSIDE = 1, 2, 3, 4, 5
-ELEMENTS = {
-    '^': GUARD,
-    '.': OPEN,
-    '#': OBSTACLE,
-    'X': PASSED,
-    'O': OUTSIDE,
-}
-SYMBOLS = {element: symbol for (symbol, element) in ELEMENTS.items()}
-
 # x, y, next
 MOVEMENTS = {
     '^': (-1,  0, '>'),
@@ -25,7 +15,7 @@ def main(args):
     maze = read_lines(args.filename)
 
     walk_guard(maze)
-    print(len(find_element('X', maze)))
+    print(f"Part 1 - Guard's route lenght is: {len(find_element('X', maze))}")
 
 def read_lines(filename):
     maze = []
@@ -47,11 +37,9 @@ def find_element(symbol, maze):
 
 def walk_guard(maze):
     pos = find_element('^', maze)[0]
-    print_maze(maze)
     maxx, maxy = len(maze[0])-1, len(maze)-1
     while 0 < pos[0] < maxx and 0 < pos[1] < maxy:
         pos = step_guard(pos, maze)
-        print(pos, maze[pos[0]][pos[1]])
     print_maze(maze)
 
 def step_guard(pos, maze):
