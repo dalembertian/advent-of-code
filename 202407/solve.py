@@ -31,10 +31,9 @@ def check_value(value, operands, concat=False):
         return value == operands[0]
     else:
         op = operands.pop()
-        m = check_value(value // op, operands[:], concat) if value % op == 0 else False
-        a = check_value(value -  op, operands[:], concat) if value - op > 0  else False
-        c = check_value(unconcat(value, op), operands[:], concat) if (concat and is_concat(value, op)) else False
-        return m or a or c
+        return (check_value(value // op, operands[:], concat) if value % op == 0 else False) or \
+               (check_value(value -  op, operands[:], concat) if value - op > 0  else False) or \
+               (check_value(unconcat(value, op), operands[:], concat) if (concat and is_concat(value, op)) else False)
 
 def is_concat(value, ending):
     return value > 9 and str(value).endswith(str(ending))
