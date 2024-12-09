@@ -25,10 +25,16 @@ def index(line):
     return block, size, space
 
 def find_full_space(block, size, space):
+    start = 0
     for i in range(len(block)-1, 1, -1):
         # Tricky: which spaces to check? *All* to the left!
         pos = block.index(i)
-        for j in range(pos):
+        iszero = True
+        for j in range(start, pos):
+            if iszero and space[j] == 0:
+                start += 1
+            else:
+                iszero = False
             if size[i] <= space[j]:
                 block.pop(pos)
                 block.insert(j+1, i)
