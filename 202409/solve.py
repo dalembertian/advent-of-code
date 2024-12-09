@@ -7,7 +7,7 @@ def main(args):
     line = read_lines(args.filename)
 
     filesystem = expand_filesystem(line)
-    compact_filesystem(filesystem)
+    filesystem = compact_filesystem(filesystem)
     print(f'Part 1 - Checksum of filesystem is: {checksum(filesystem)}')
 
     block, size, space = index(line)
@@ -56,12 +56,17 @@ def expand_filesystem(line):
     return filesystem
 
 def compact_filesystem(filesystem):
-    try:
-        while True:
-            pos = filesystem.index(-1)
-            filesystem[pos] = filesystem.pop()
-    except:
-        pass
+    i, j = 0, len(filesystem) - 1
+    while i < j:
+        while filesystem[i] != -1:
+            i += 1
+        while filesystem[j] == -1:
+            j -= 1
+        if i < j:
+            filesystem[i], filesystem[j] = filesystem[j], -1
+        else:
+            break
+    return filesystem[:i]
 
 def checksum(filesystem):
     return sum(i * j for i, j in enumerate(filesystem))
