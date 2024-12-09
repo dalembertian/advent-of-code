@@ -6,12 +6,13 @@ import argparse
 
 def main(args):
     reports = read_lines(args.filename)
+
     # show_reports(reports)
-    count_safes(reports)
+    print(f'Part 1 - Safe Reports: {count_safes(reports)} out of {len(reports)}')
 
     dampen_reports(reports)
     # show_reports(reports)
-    count_safes(reports)
+    print(f'Part 2 - Safe Reports: {count_safes(reports)} out of {len(reports)}')
 
 def read_lines(filename):
     reports = []
@@ -33,8 +34,7 @@ def count_safes(reports):
     # Counts how many deltas are safe, for all reports
     all_deltas = [calculate_deltas(report) for report in reports]
     safes = [is_safe(deltas) for deltas in all_deltas].count(True)
-    print(f'Total Reports: {len(reports)}')
-    print(f'Safe Reports: {safes}\n')
+    return safes
 
 def dampen_reports(reports):
     # This could be made more efficient by disconsidering reports that have 2+ problems in their deltas
