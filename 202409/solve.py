@@ -17,9 +17,7 @@ def main(args):
 
 def index(line):
     # Split the entry in 3 separate data structures
-    block = []
-    size  = {}
-    space = []
+    block, size, space = [], {}, []
     for i in range(len(line) // 2):
         block.append(i)
         size[i] = int(line[i*2])
@@ -57,7 +55,7 @@ def expand_filesystem(line):
 
 def compact_filesystem(filesystem):
     i, j = 0, len(filesystem) - 1
-    while i < j:
+    while True:
         while filesystem[i] != -1:
             i += 1
         while filesystem[j] == -1:
