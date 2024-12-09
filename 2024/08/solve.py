@@ -13,7 +13,7 @@ def main(args):
     antinodes = set(count_antinodes(antennas, length, width, True))
     print(f'Part 2 - total (unique) antinodes: {len(antinodes)}')
 
-    plot(antennas, antinodes, length, width)
+    # plot(antennas, antinodes, length, width)
 
 def count_antinodes(antennas, length, width, harmonics=False):
     antinodes = []
