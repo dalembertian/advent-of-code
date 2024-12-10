@@ -5,7 +5,7 @@ import argparse
 
 def main(args):
     maze = read_lines(args.filename)
-    # plot(maze)
+    plot(maze)
 
     trailheads = find_hikes(maze)
     print(f'Part 1 - Total sum of trailheads is: {sum(trailheads)}')
@@ -18,10 +18,10 @@ def find_hikes(maze, unique=True):
     size = len(maze) - 2
     for row in range(size):
         for col in range(size):
+                trails = check_trail(row, col, maze)
                 if unique:
-                    heads.append(len(set(check_trail(row, col, maze))))
-                else:
-                    heads.append(len(check_trail(row, col, maze)))
+                    trails = set(trails)
+                heads.append(len(trails))
     return heads
 
 def check_trail(row, col, maze, expected=0):
@@ -33,7 +33,6 @@ def check_trail(row, col, maze, expected=0):
         if expected == 9:
             return [(row,col)]
         else:
-            # TODO: no need to check where we came from
             return check_trail(row - 1, col, maze, expected + 1) + \
                    check_trail(row + 1, col, maze, expected + 1) + \
                    check_trail(row, col - 1, maze, expected + 1) + \
