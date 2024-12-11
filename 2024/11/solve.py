@@ -8,11 +8,12 @@ from math import log10
 
 def main(args):
     line = read_lines(args.filename)
-    blinks = int(args.blinks)
-    print(line)
+    # blinks = int(args.blinks)
+    # print(line)
 
-    stones = sum([change_stones(stone, blinks) for stone in line])
-    print(f'Amount of stones after {blinks} blinks: {stones}')
+    for part, blinks in ((1, 25), (2, 75)):
+        stones = sum([change_stones(stone, blinks) for stone in line])
+        print(f'Part {part} - Amount of stones after {blinks} blinks: {stones}')
 
 @cache
 def change_stones(stone, times):
@@ -43,6 +44,6 @@ def read_lines(filename):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("filename", help='Input file to process')
-    parser.add_argument("blinks", help='Amount of blinks ;-)')
+    # parser.add_argument("blinks", help='Amount of blinks ;-)')
     args = parser.parse_args()
     main(args)
