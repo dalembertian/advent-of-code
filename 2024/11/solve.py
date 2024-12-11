@@ -21,6 +21,7 @@ def change_stones(stone, times, turn=0):
     if stone == 0:
         total += change_stones(1, times, turn+1)
     else:
+        left, right = cache.setdefault(stone, split_stone(stone))
         total += change_stones(left, times, turn+1)
         if right >= 0:
             total += change_stones(right, times, turn+1)
