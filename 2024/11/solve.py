@@ -2,9 +2,9 @@
 # encoding: utf-8
 
 import argparse
-from math import log10
+from functools import cache
 
-cache = {}
+from math import log10
 
 def main(args):
     line = read_lines(args.filename)
@@ -14,17 +14,18 @@ def main(args):
     stones = sum([change_stones(stone, blinks) for stone in line])
     print(f'Amount of stones after {blinks} blinks: {stones}')
 
-def change_stones(stone, times, turn=0):
-    if turn == times:
+@cache
+def change_stones(stone, times):
+    if times == 0:
         return 1
     total = 0
     if stone == 0:
-        total += change_stones(1, times, turn+1)
+        total += change_stones(1, times - 1)
     else:
-        left, right = cache.setdefault(stone, split_stone(stone))
-        total += change_stones(left, times, turn+1)
+        left, right = split_stone(stone)
+        total += change_stones(left, times - 1)
         if right >= 0:
-            total += change_stones(right, times, turn+1)
+            total += change_stones(right, times - 1)
     return total
 
 def split_stone(stone):
