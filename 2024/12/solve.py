@@ -11,9 +11,7 @@ def main(args):
     prices = find_regions(maze)
     print(f'Part 1 - Total price paid is: {sum(prices)}')
 
-    # Wrong: 907046 too low
     maze = read_lines(args.filename)
-    plot(maze)
     prices = find_regions(maze, discount=True)
     print(f'Part 2 - Total price paid is: {sum(prices)}')
 
@@ -26,10 +24,7 @@ def find_regions(maze, discount=False):
             if region != '.':
                 borders = follow(row+1, col+1, maze, region)
                 area = clean(maze)
-                if discount:
-                    multiplier = sides(borders)
-                else:
-                    multiplier = len(borders)
+                multiplier = sides(borders) if discount else len(borders)
                 prices.append(area * multiplier)
     return prices
 
@@ -47,21 +42,17 @@ def follow(x, y, maze, region):
 def sides(borders):
     x = defaultdict(list)
     y = defaultdict(list)
+    # aggregate rows and cols of the fences, but taking care to distinguish walls
+    # seen from "the inside" or "the outside", to avoid the problem with maze 5
     for (ax, ay), (bx, by) in borders:
         if ax == bx:
-            y[min(ay, by)].append(ax)
+            y[(ay, min(ay, by))].append(ax)
         if ay == by:
-            x[min(ax, bx)].append(ay)
-    count = 0
+            x[(ax, min(ax, bx))].append(ay)
+
+    # Once listed, doesn't matter if wall is hor or vert. But walls need to be contiguous!
     segments = [sorted(s) for s in x.values()] + [sorted(s) for s in y.values()]
-
-    for k, v in x.items():
-        print(k, sorted(v))
-    print()
-    for k, v in y.items():
-        print(k, sorted(v))
-    print()
-
+    count = 0
     for segment in segments:
         last = -2
         for this in segment:
