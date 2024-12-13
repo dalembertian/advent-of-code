@@ -11,25 +11,25 @@ def main(args):
     machines = read_lines(args.filename)
     # print(machines)
 
+    prizes = get_prizes(machines)
+    print(f'Part 1 - Total amount of tokens to win {len(prizes)} prizes is: {sum(prizes)}')
+
+def get_prizes(machines):
     prizes = []
     for a, b, prize in machines:
         factors = set(factor(prize[0], a[0], b[0]))
         factors = factors.intersection(factor(prize[1], a[1], b[1]))
         if factors:
             prizes.append(min([3*x + y for x, y in factors]))
-    # print(prizes)
-    print(sum(prizes))
-
+    return prizes
 
 def factor(number, a, b):
     factors = []
     i, factor = 0, 0
-    while i <= 100 and factor <= number:
+    while factor <= number:
         rest = number - factor
         if b <= rest and rest % b == 0:
-            j = rest // b
-            if b <= 100:
-                factors.append((i, j))
+            factors.append((i, rest // b))
         i, factor = i + 1, factor + a
     return factors
 
