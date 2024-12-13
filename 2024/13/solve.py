@@ -4,8 +4,6 @@
 import argparse
 import re
         
-DIRECTIONS = ((-1, 0), (1, 0), (0, -1), (0, 1))
-
 def main(args):
     machines = read_lines(args.filename)
 
@@ -17,26 +15,17 @@ def main(args):
     print(f'Part 2 - Total amount of tokens to win {len(prizes)} prizes is: {sum(prizes)}')
 
 def get_prizes(machines):
-    prizes = []
-    for a, b, prize in machines:
-        factors = set(factor(prize[0], a[0], b[0]))
-        factors = factors.intersection(factor(prize[1], a[1], b[1]))
-        if factors:
-            prizes.append(min([3*x + y for x, y in factors]))
-    return prizes
+    prizes = [solve_equation(machine) for machine in machines]
+    return [3*p[0] + p[1] for p in prizes if p]
 
-def factor(number, a, b):
-    # TODO: improve factorization for Part 2?
-    # https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm
-    # https://stackoverflow.com/questions/32871539/integer-factorization-in-python
-    factors = []
-    i, factor = 0, 0
-    while factor <= number:
-        rest = number - factor
-        if b <= rest and rest % b == 0:
-            factors.append((i, rest // b))
-        i, factor = i + 1, factor + a
-    return factors
+def solve_equation(machine):
+    # Tricky explanation for the problem - we don't need to look for the BEST
+    # solution, there's only ONE solution for each machine! >:-(
+    # Looking for (a,b) such that a*x + b*y = p (system of 2 equations)
+    (ax, ay), (bx, by), (px, py) = machine
+    a = (px * by - py * bx) / (ax * by - ay * bx)
+    b = (px - a * ax) / bx
+    return (int(a), int(b)) if a.is_integer() and b.is_integer() else None
 
 def increase_distance(machines):
     for i, machine in enumerate(machines):
