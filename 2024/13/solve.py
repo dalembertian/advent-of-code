@@ -3,16 +3,18 @@
 
 import argparse
 import re
-from collections import defaultdict
         
 DIRECTIONS = ((-1, 0), (1, 0), (0, -1), (0, 1))
 
 def main(args):
     machines = read_lines(args.filename)
-    # print(machines)
 
     prizes = get_prizes(machines)
     print(f'Part 1 - Total amount of tokens to win {len(prizes)} prizes is: {sum(prizes)}')
+
+    increase_distance(machines)
+    prizes = get_prizes(machines)
+    print(f'Part 2 - Total amount of tokens to win {len(prizes)} prizes is: {sum(prizes)}')
 
 def get_prizes(machines):
     prizes = []
@@ -24,6 +26,9 @@ def get_prizes(machines):
     return prizes
 
 def factor(number, a, b):
+    # TODO: improve factorization for Part 2?
+    # https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm
+    # https://stackoverflow.com/questions/32871539/integer-factorization-in-python
     factors = []
     i, factor = 0, 0
     while factor <= number:
@@ -32,6 +37,11 @@ def factor(number, a, b):
             factors.append((i, rest // b))
         i, factor = i + 1, factor + a
     return factors
+
+def increase_distance(machines):
+    for i, machine in enumerate(machines):
+        a, b, (px, py) = machine
+        machines[i] = (a, b, (px + 10000000000000, py + 10000000000000))
 
 def read_lines(filename):
     values = re.compile(r'.*X[+|=](\d+), Y[+|=](\d+)')
