@@ -38,9 +38,13 @@ def find_easter_egg(width, length, positions, velocities):
                 break
             else:
                 robots[(nx, ny)] = 1
-        if success:
+        if success and find_frame(width, length, robots.keys()):
             solutions.append(i)
     return solutions
+
+def find_frame(width, length, positions):
+    return True
+    # Got lazy... :-D
 
 def move_robots(width, length, positions, velocities, times):
     for i, (x, y) in enumerate(positions):
