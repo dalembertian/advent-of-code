@@ -9,15 +9,24 @@ from re import compile
         
 def main(args):
     width, length, positions, velocities = read_lines(args.filename)
-    # plot(width, length, positions)
-
     move_robots(width, length, positions, velocities, 100)
     quadrants = safe(width, length, positions)
     print(f'Part 1 - Safety factor is: {reduce(lambda x, y: x * y, quadrants)}')
 
-    # 7831 too low
-    # 7832 too low
     width, length, positions, velocities = read_lines(args.filename)
+    easter_eggs = find_easter_egg(width, length, positions, velocities)
+    for egg in easter_eggs:
+        print(f'Part 2 - Possible Easter Egg after {egg} seconds:')
+        egg_positions = positions[:]
+        move_robots(width, length, egg_positions, velocities, egg)
+        plot(width, length, egg_positions)
+
+def find_easter_egg(width, length, positions, velocities):
+    # "(...) very rarely, most of the robots should arrange themselves into a picture
+    # of a Christmas tree".
+    # Very little detail given, I assume it means non-overlapping robots
+    # TODO: Change to look for the "frame"!
+    solutions = []
     for i in range(10000):
         robots = defaultdict(int)
         success = True
@@ -30,11 +39,8 @@ def main(args):
             else:
                 robots[(nx, ny)] = 1
         if success:
-            print(f'SUCCESS!! Found tree after {i} seconds.')
-            move_robots(width, length, positions, velocities, i)
-            plot(width, length, positions)
-    if not success:
-        print(f'FAILURE :-( Not Found tree even after {i} seconds.')
+            solutions.append(i)
+    return solutions
 
 def move_robots(width, length, positions, velocities, times):
     for i, (x, y) in enumerate(positions):
