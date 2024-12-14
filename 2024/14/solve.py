@@ -15,6 +15,27 @@ def main(args):
     quadrants = safe(width, length, positions)
     print(f'Part 1 - Safety factor is: {reduce(lambda x, y: x * y, quadrants)}')
 
+    # 7831 too low
+    # 7832 too low
+    width, length, positions, velocities = read_lines(args.filename)
+    for i in range(10000):
+        robots = defaultdict(int)
+        success = True
+        for (x, y), (vx, vy) in zip(positions, velocities):
+            nx = (x + i * vx) % width
+            ny = (y + i * vy) % length
+            if robots[(nx, ny)] != 0:
+                success = False
+                break
+            else:
+                robots[(nx, ny)] = 1
+        if success:
+            print(f'SUCCESS!! Found tree after {i} seconds.')
+            move_robots(width, length, positions, velocities, i)
+            plot(width, length, positions)
+    if not success:
+        print(f'FAILURE :-( Not Found tree even after {i} seconds.')
+
 def move_robots(width, length, positions, velocities, times):
     for i, (x, y) in enumerate(positions):
         positions[i] = (
