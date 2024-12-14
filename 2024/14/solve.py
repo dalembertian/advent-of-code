@@ -9,31 +9,11 @@ from re import compile
         
 def main(args):
     width, length, positions, velocities = read_lines(args.filename)
-    plot(width, length, positions)
-    print()
+    # plot(width, length, positions)
 
     move_robots(width, length, positions, velocities, 100)
-    plot(width, length, positions)
-    print()
-
     quadrants = safe(width, length, positions)
-    print(quadrants)
-    print(reduce(lambda x, y: x * y, quadrants))
-
-def plot(width, length, positions):
-    maze = [[0 for j in range(width)] for i in range(length)]
-    for x, y in positions:
-        maze[y][x] += 1
-    for row in maze:
-        print(''.join([str(p) for p in row]))
-    return maze
-
-def plot(width, length, positions):
-    maze = [[0 for j in range(width)] for i in range(length)]
-    for x, y in positions:
-        maze[y][x] += 1
-    for row in maze:
-        print(''.join([str(p) if p>0 else '.' for p in row]))
+    print(f'Part 1 - Safety factor is: {reduce(lambda x, y: x * y, quadrants)}')
 
 def move_robots(width, length, positions, velocities, times):
     for i, (x, y) in enumerate(positions):
@@ -48,8 +28,15 @@ def safe(width, length, positions):
     for x, y in positions:
         if x != mx and y != my:
             robots[(0 if x < mx else 1, 0 if y < my else 1)] += 1
-    print(robots)
     return robots.values()
+
+def plot(width, length, positions):
+    maze = [[0 for j in range(width)] for i in range(length)]
+    for x, y in positions:
+        maze[y][x] += 1
+    for row in maze:
+        print(''.join([str(p) if p>0 else '.' for p in row]))
+    print()
 
 def read_lines(filename):
     values = compile(r'(-?\d+)')
