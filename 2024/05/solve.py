@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 import argparse
-import re
 
 
 def main(args):
