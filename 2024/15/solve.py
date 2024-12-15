@@ -28,26 +28,28 @@ def main(args):
     boxes = find_element('O', maze)
     print(f'Part 1 - GPS coordinates sum is: {sum([x + 100*y for x, y in boxes])}')
 
-    # maze, moves = read_lines(args.filename)
-    # maze = enlarge(maze)
+    maze, moves = read_lines(args.filename)
+    maze = enlarge(maze)
     # plot(maze)
-    # walk_robot(maze, moves)
+    walk_robot(maze, moves)
     # plot(maze)
-    # boxes = find_element(r'\[\]', maze)
-    # print(f'Part 2 - GPS coordinates sum is: {sum([x + 100*y for x, y in boxes])}')
+    boxes = find_element(r'\[', maze)
+    print(f'Part 2 - GPS coordinates sum is: {sum([x + 100*y for x, y in boxes])}')
 
 def walk_robot(maze, moves):
     x, y = find_element('@', maze)[0]
-    for move in moves:
+    for i, move in enumerate(moves):
         dx, dy = MOVEMENTS[move]
-        if maze[y+dy][x+dx] == '.' or push_box(x+dx, y+dy, move, maze):
-            # print(x, y, move)
+        # plot(maze)
+        # print(move)
+        # print()
+        if maze[y+dy][x+dx] == '.' or push_boxes([(x+dx, y+dy)], move, maze):
             x, y = move_element(x, y, move, maze)
-            # plot(maze)
-            # print()
+        # input('')
 
-def push_box(x, y, move, maze):
+def push_boxes(boxes, move, maze):
     dx, dy = MOVEMENTS[move]
+    x, y = boxes[0]
 
     # Normal Maze
     if maze[y][x] == 'O':
@@ -55,7 +57,7 @@ def push_box(x, y, move, maze):
             move_element(x, y, move, maze)
             return True
         if maze[y+dy][x+dx] == 'O':
-            if push_box(x+dx, y+dy, move, maze):
+            if push_boxes([(x+dx, y+dy)], move, maze):
                 move_element(x, y, move, maze)
                 return True
 
@@ -67,20 +69,26 @@ def push_box(x, y, move, maze):
                 move_element(x,    y, move, maze)
                 return True
             if maze[y][x+2*dx] in BIGBOX:
-                if push_box(x+2*dx, y, move, maze):
+                if push_boxes([(x+2*dx, y)], move, maze):
                     move_element(x+dx, y, move, maze)
                     move_element(x, y, move, maze)
                     return True
         if move in VERT:
-            xx = x+1 if maze[y][x] == '[' else x-1
-            if maze[y+dy][x] == maze[y+dy][xx] == '.':
-                move_element(x, y, move, maze)
-                move_element(xx, y, move, maze)
+            # Both [ and ] should be in the list of boxes
+            for i, j in boxes:
+                ii = i+1 if maze[j][i] == '[' else i-1
+                if (ii, j) not in boxes:
+                    boxes.append((ii,j))
+            if all([maze[j+dy][i+dx] == '.' for i, j in boxes]):
+                for i, j in boxes:
+                    move_element(i, j, move, maze)
                 return True
-            if maze[y+dy][x] in BIGBOX or maze[y+dy][xx] in BIGBOX:
-                if push_box(x+dx, y+dy, move, maze):
-                    move_element(x, y, move, maze)
-                    move_element(xx, y, move, maze)
+            if any([maze[j+dy][i+dx] == '#' for i, j in boxes]):
+                return False
+            if any([maze[j+dy][i+dx] in BIGBOX for i, j in boxes]):
+                if push_boxes([(i+dx, j+dy) for i, j in boxes if maze[j+dy][i+dx] in BIGBOX], move, maze):
+                    for i, j in boxes:
+                        move_element(i, j, move, maze)
                     return True
 
 def find_element(symbol, maze):
