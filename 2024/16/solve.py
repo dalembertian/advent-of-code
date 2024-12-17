@@ -23,11 +23,19 @@ INFINITE = float('inf')
 
 def main(args):
     maze = read_lines(args.filename)
+    plot(maze)
 
     nodes  = defaultdict(dict)
     start  = find_element('S', maze)[0]
     finish = find_element('E', maze)[0]
     find_path(start, '>', start, 0, '', maze, nodes)
+    # Two problems with the nodes collected:
+    # 1. The distances are wrong, because the path to get to a certain node will
+    #    influence the NEXT paths going out (because of the orientation of the reindeer).
+    #    Fixing this will be a PITA.
+    # 2. The recursive approach to give each and every step was a mistake: the stack is
+    #    overflowing even for Part 1. A possible fix would be to follow unique paths
+    #    iteratively, and throw new paths to follow (after a node) to a list.
 
     for k in nodes.keys():
         print(f'{k}: {nodes[k]}')
@@ -38,7 +46,7 @@ def main(args):
         plot(maze, start, path)
         print(f'Cost by Dijkstra: {cost}')
 
-def find_path(visit, move, previous, initial_cost, path, maze, nodes, segments=[]):
+def find_path(visit, move, previous, initial_cost, path, maze, nodes):
     x, y = visit
     path += move
 
@@ -130,7 +138,7 @@ def dijkstra(start, nodes, maze):
     node = finish
     path = ''
     while node != start:
-        # print(node, nodes[node]['prev_node'])
+        print(f'{str(node):8} -> {str(nodes[node]['prev_node']):8}: {nodes[node]['cost']:5} {nodes[node]['prev_path']}')
         path += nodes[node]['prev_path']
         node  = nodes[node]['prev_node']
     return invert_path(path), nodes[finish]['cost']
