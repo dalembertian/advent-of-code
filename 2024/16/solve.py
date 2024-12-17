@@ -70,8 +70,8 @@ def dijkstra(start, finish, nodes):
         # Visits every node linked to this STILL IN unvisited
         for v, path in nodes[this]['nodes']:
             if v in unvisited:
-                cost = cost_path(path)
-                if nodes[v]['cost'] == -1 or nodes[v]['cost'] > cost:
+                cost = nodes[this]['cost'] + cost_path(path)
+                if cost < nodes[v]['cost']:
                     nodes[v]['cost'] = cost
                     nodes[v]['prev_path'] = invert_path(path)
                     nodes[v]['prev_node'] = this
