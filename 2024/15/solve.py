@@ -30,22 +30,16 @@ def main(args):
 
     maze, moves = read_lines(args.filename)
     maze = enlarge(maze)
-    # plot(maze)
     walk_robot(maze, moves)
-    # plot(maze)
     boxes = find_element(r'\[', maze)
     print(f'Part 2 - GPS coordinates sum is: {sum([x + 100*y for x, y in boxes])}')
 
 def walk_robot(maze, moves):
     x, y = find_element('@', maze)[0]
-    for i, move in enumerate(moves):
+    for move in moves:
         dx, dy = MOVEMENTS[move]
-        # plot(maze)
-        # print(move)
-        # print()
         if maze[y+dy][x+dx] == '.' or push_boxes([(x+dx, y+dy)], move, maze):
             x, y = move_element(x, y, move, maze)
-        # input('')
 
 def push_boxes(boxes, move, maze):
     dx, dy = MOVEMENTS[move]
@@ -83,9 +77,9 @@ def push_boxes(boxes, move, maze):
                 for i, j in boxes:
                     move_element(i, j, move, maze)
                 return True
-            if any([maze[j+dy][i+dx] == '#' for i, j in boxes]):
+            elif any([maze[j+dy][i+dx] == '#' for i, j in boxes]):
                 return False
-            if any([maze[j+dy][i+dx] in BIGBOX for i, j in boxes]):
+            elif any([maze[j+dy][i+dx] in BIGBOX for i, j in boxes]):
                 if push_boxes([(i+dx, j+dy) for i, j in boxes if maze[j+dy][i+dx] in BIGBOX], move, maze):
                     for i, j in boxes:
                         move_element(i, j, move, maze)
