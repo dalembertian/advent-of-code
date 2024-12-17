@@ -24,7 +24,6 @@ OPPOSITE = {
 
 def main(args):
     maze = read_lines(args.filename)
-    plot(maze)
 
     nodes  = defaultdict(dict)
     start  = find_element('S', maze)[0]
@@ -40,7 +39,7 @@ def main(args):
     #             plot(maze, node, path)
     #             print(node, path)
     #             input()
-    if dijkstra(start, finish, nodes):
+    if dijkstra(start, finish, nodes, maze):
         node = finish
         path = ''
         while node != start:
@@ -51,7 +50,7 @@ def main(args):
         plot(maze, start, path)
         print(f'Cost: {cost_path(path)}')
 
-def dijkstra(start, finish, nodes):
+def dijkstra(start, finish, nodes, maze):
     # Mark all unvisited nodes with distance "infinite" from start - except start
     infinite = float('inf')
     unvisited = list(nodes.keys())
@@ -62,19 +61,26 @@ def dijkstra(start, finish, nodes):
     while unvisited:
         # Get unvisited node with shortest distance to start
         unvisited.sort(key=lambda n: nodes[n]['cost'])
+        plot(maze)
         print(unvisited)
         this = unvisited.pop(0)
         if nodes[this]['cost'] == infinite:
             break
 
         # Visits every node linked to this STILL IN unvisited
+        print(this)
         for v, path in nodes[this]['nodes']:
             if v in unvisited:
+                print(v, nodes[v].get('prev_node', None), nodes[v].get('cost', None), end='')
                 cost = nodes[this]['cost'] + cost_path(path)
                 if cost < nodes[v]['cost']:
                     nodes[v]['cost'] = cost
                     nodes[v]['prev_path'] = invert_path(path)
                     nodes[v]['prev_node'] = this
+                    print(' -> ', nodes[v]['prev_node'], nodes[v]['cost'], end='')
+                print()
+        print()
+        input()
     if not unvisited:
         return True
 
