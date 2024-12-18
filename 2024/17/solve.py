@@ -58,7 +58,26 @@ def main(args):
     output = run(program, registers)
     print(f'Part 1 - Final Output: {','.join([str(o) for o in output])}')
 
-def run(program, registers):
+    A = search_itself(program, registers)
+    if A:
+        output = run(program, registers, A)
+        print(f'Part 2 - A: {A}')
+        print(f'Final Output: {','.join([str(o) for o in output])}')
+    else:
+        print(f'Couldn\'t find A... :-(')
+
+def search_itself(program, registers):
+    for A in range(10000000):
+        if A % 1000000 == 0:
+            print(A, '...')
+        output = run(program, registers, A)
+        if output == program:
+            break
+    return A
+
+def run(program, registers, A=None):
+    if A:
+        registers[0] = A
     ip = 0
     output = []
     while ip < len(program):
