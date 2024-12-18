@@ -6,39 +6,37 @@ from collections import defaultdict
 from functools import reduce
 from re import compile
 
-def adv(ip, operand, registers, output):
-    # A = A // 2**COMBO(operand)
+def adv(ip, operand, registers):
     registers[0] = registers[0] // 2 ** COMBO[operand](registers)
-    return ip + 2
+    return ip + 2, None
 
-def bxl(ip, operand, registers, output):
+def bxl(ip, operand, registers):
     registers[1] ^= operand
-    return ip + 2
+    return ip + 2, None
 
-def bst(ip, operand, registers, output):
+def bst(ip, operand, registers):
     registers[1] = COMBO[operand](registers) % 8
-    return ip + 2
+    return ip + 2, None
 
-def jnz(ip, operand, registers, output):
+def jnz(ip, operand, registers):
     if registers[0] == 0:
-        return ip + 2
-    return operand
+        return ip + 2, None
+    return operand, None
 
-def bxc(ip, operand, registers, output):
+def bxc(ip, operand, registers):
     registers[1] = registers[1] ^ registers[2]
-    return ip + 2
+    return ip + 2, None
 
-def out(ip, operand, registers, output):
-    output.append(COMBO[operand](registers) % 8)
-    return ip + 2
+def out(ip, operand, registers):
+    return ip + 2, COMBO[operand](registers) % 8
 
-def bdv(ip, operand, registers, output):
+def bdv(ip, operand, registers):
     registers[1] = registers[0] // 2 ** COMBO[operand](registers)
-    return ip + 2
+    return ip + 2, None
 
-def cdv(ip, operand, registers, output):
+def cdv(ip, operand, registers):
     registers[2] = registers[0] // 2 ** COMBO[operand](registers)
-    return ip + 2
+    return ip + 2, None
 
 COMBO = {
     0: lambda reg: 0,
@@ -60,30 +58,54 @@ def main(args):
 
     A = search_itself(program, registers)
     if A:
-        output = run(program, registers, A)
+        new_registers = [A, registers[1], registers[2]]
+        output = run(program, new_registers)
         print(f'Part 2 - A: {A}')
-        print(f'Final Output: {','.join([str(o) for o in output])}')
+        print(f'Program: {','.join([str(o) for o in program])}')
+        print(f'Output: {','.join([str(o) for o in output])}')
     else:
         print(f'Couldn\'t find A... :-(')
 
-def search_itself(program, registers):
-    for A in range(10000000):
+def search_itself(program, initial_registers):
+    max_size = len(program)
+    registers = initial_registers[:]
+    A, B, C = registers
+    A = -1
+    while A < 100000000:
+        A += 1
         if A % 1000000 == 0:
             print(A, '...')
-        output = run(program, registers, A)
-        if output == program:
+        ip = 0
+        target = 0
+        registers[0], registers[1], registers[2] = A, B, C
+        while ip < len(program):
+            opcode, operand = program[ip], program[ip+1]
+            ip, output = MACHINE[opcode](ip, operand, registers)
+            # debug(ip, program, registers, output)
+            # print(f'target: {target}')
+            # input()
+            if output != None:
+                if target == max_size or output != program[target]:
+                    target += 1
+                    break
+                target += 1
+        if target == max_size:
             break
-    return A
+    if target == max_size:
+        return A
+    else:
+        return None
 
-def run(program, registers, A=None):
-    if A:
-        registers[0] = A
+def run(program, initial_registers):
+    registers = initial_registers[:]
     ip = 0
     output = []
     while ip < len(program):
         opcode, operand = program[ip], program[ip+1]
-        ip = MACHINE[opcode](ip, operand, registers, output)
-        # debug(ip, program, registers, output)
+        ip, out = MACHINE[opcode](ip, operand, registers)
+        if out != None:
+            output.append(out)
+        # debug(ip, program, registers, out)
     return output
 
 def debug(ip, program, registers, output):
