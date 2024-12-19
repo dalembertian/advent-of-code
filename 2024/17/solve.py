@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 from collections import deque
 from re import compile
 
-from computer import *
+from computer import run
 
 def main(args):
     program, registers = read_lines(args.filename)
@@ -14,14 +14,10 @@ def main(args):
 
     output = run(program, registers)
     print(f'Part 1 - Final Output: {','.join([str(o) for o in output])}')
+    # print(f'Output : {','.join([str(o) for o in output])}')
 
     new_A = search_for_itself(program, registers)
     print(f'Part 2 - A: {new_A}')
-    # if new_A:
-    #     A, B, C = registers
-    #     output = run(program, [new_A, B, C])
-    #     print(f'Program: {','.join([str(o) for o in program])}')
-    #     print(f'Output : {','.join([str(o) for o in output])}')
 
 def search_for_itself(program, registers):
     # Custom solution for input.txt (see file)
@@ -41,26 +37,6 @@ def search_for_itself(program, registers):
                 attempt.append((new_A, digit + 1))
             new_A += 1
         digit += 1
-
-def run(program, initial_registers):
-    registers = initial_registers[:]
-    ip = 0
-    output = []
-    while ip < len(program):
-        opcode, operand = program[ip], program[ip+1]
-        ip, out = MACHINE[opcode](ip, operand, registers)
-        if out != None:
-            output.append(out)
-        # debug(ip, program, registers, out)
-    return output
-
-def debug(ip, program, registers, output):
-    print(program)
-    print(registers)
-    if ip < len(program):
-        print(f'ip: {ip}, opcode: {program[ip]} ({MACHINE[program[ip]]}), operand: {program[ip+1]}')
-    print(f'output: {output}')
-    print()
 
 def read_lines(filename):
     values = compile(r'([\d+,?]+)')

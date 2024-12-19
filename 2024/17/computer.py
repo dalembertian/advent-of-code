@@ -44,3 +44,23 @@ COMBO = {
 }
 MACHINE  = {0: adv, 1: bxl, 2: bst, 3: jnz, 4: bxc, 5: out, 6: bdv, 7: cdv}
 ASSEMBLY = {'adv': adv, 'bxl': bxl, 'bst': bst, 'jnz': jnz, 'bxc': bxc, 'out': out, 'bdv': bdv, 'cdv': cdv}
+
+def run(program, initial_registers):
+    registers = initial_registers[:]
+    ip = 0
+    output = []
+    while ip < len(program):
+        opcode, operand = program[ip], program[ip+1]
+        ip, out = MACHINE[opcode](ip, operand, registers)
+        if out != None:
+            output.append(out)
+        # debug(ip, program, registers, out)
+    return output
+
+def debug(ip, program, registers, output):
+    print(program)
+    print(registers)
+    if ip < len(program):
+        print(f'ip: {ip}, opcode: {program[ip]} ({MACHINE[program[ip]]}), operand: {program[ip+1]}')
+    print(f'output: {output}')
+    print()
