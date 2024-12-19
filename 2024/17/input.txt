@@ -2,4 +2,24 @@ Register A: 66171486
 Register B: 0
 Register C: 0
 
-Program: 2,4,1,6,7,5,4,6,1,4,5,5,0,3,3,0
+Program: 2,4,1,6,7,5,4,6,1,4,5,5,0,3,3,0 (16 digits)
+
+Brute force approach would need to test 246T+ possibilities:
+
+From:  35184372088832 (8**15)
+To:   281474976710655 (8**16 - 1)
+
+Translation of the program:
+
+while A:
+    B = A % 8
+    B = B ^ 6
+    C = A // 2**B
+    B = B ^ C
+    B = B ^ A
+    print B % 8
+    A = A // 8
+
+Custom solution based on the decreasing value if A: starting
+from the last digit, find possible values of A, and keep going
+up for each digit, since there's only 1 output per loop.
