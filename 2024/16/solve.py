@@ -41,10 +41,10 @@ def main(args):
     # print()
 
     path, cost = dijkstra(start, finish, nodes, maze)
-    # if path:
-    #     plot(maze, start, path)
-    #     print(f'Cost by Dijkstra: {cost}')
-    # print(f'Nodes: {len(nodes)}')
+    if path:
+        plot(maze, invisible_walls=True, start=start, path=path)
+        print(f'Cost by Dijkstra: {cost}')
+    print(f'Nodes: {len(nodes)}')
 
     print(f'Part 1 - Cost of the shortest path: {cost}')
 
@@ -163,7 +163,7 @@ def dijkstra(start, finish, nodes, maze):
                 best_path = path
     return invert_path(best_path), best_cost
 
-def plot(maze, start=None, path=None):
+def plot(maze, invisible_walls=False, start=None, path=None):
     # print(f'PLOT - start: {start}, path: {path}')
     cost = 0
     maze = [maze[y][:] for y in range(len(maze))]
@@ -178,17 +178,21 @@ def plot(maze, start=None, path=None):
             maze[y][x] = move
             dx, dy = MOVEMENTS[move]
             x, y = x+dx, y+dy
-    if len(maze[0]) >= 100:
-        print(f'    {''.join([str(i // 100) if i >= 100 else ' ' for i in range(len(maze[0]))])}')
-    print(f'    {''.join([str(i % 100 // 10) if i >= 10 else ' ' for i in range(len(maze[0]))])}')
-    print(f'    {''.join([str(i % 10) for i in range(len(maze[0]))])}')
+
+    plot_ruler(maze)
     for i, line in enumerate(maze):
-        print(f'{i:03} {''.join(line)} {i:03}')
-    print(f'    {''.join([str(i % 10) for i in range(len(maze[0]))])}')
-    print(f'    {''.join([str(i % 100 // 10) if i >= 10 else ' ' for i in range(len(maze[0]))])}')
+        row = ''.join(line)
+        if invisible_walls:
+            row = row.replace('#', ' ')
+        print(f'{i:03} {row} {i:03}')
+    plot_ruler(maze)
+    print()
+
+def plot_ruler(maze):
     if len(maze[0]) >= 100:
         print(f'    {''.join([str(i // 100) if i >= 100 else ' ' for i in range(len(maze[0]))])}')
-    # print(f'Cost: {cost}')
+    print(f'    {''.join([str(i % 100 // 10) if i >= 10 else ' ' for i in range(len(maze[0]))])}')
+    print(f'    {''.join([str(i % 10) for i in range(len(maze[0]))])}')
 
 def read_lines(filename):
     with open(filename) as lines:
