@@ -11,18 +11,18 @@ def main(args):
     print(patterns)
     print()
 
-    # print(f'Part 1 - {[search_for_pattern(pattern, designs) for pattern in patterns].count(True)} designs are possible.')
-    for pattern in patterns:
-        print(f'{pattern} is {'doable' if search_for_pattern(pattern, designs) else 'impossible'}')
+    print(f'Part 1 - {[search_for_pattern(pattern, designs) for pattern in patterns].count(True)} designs are possible.')
+    # for pattern in patterns:
+    #     print(f'{pattern} is {'doable' if search_for_pattern(pattern, designs) else 'impossible'}')
 
 def search_for_pattern(pattern, designs):
     length = len(pattern)
-    print(f'pattern: {pattern}, length: {length}')
+    # print(f'pattern: {pattern}, length: {length}')
 
     attempts = deque([(design, 0) for design in designs[pattern[0]] if pattern.startswith(design)])
     while attempts:
         design, index = attempts.popleft()
-        print(f'design: {design}, index: {index}')
+        # print(f'design: {design}, index: {index}')
         i = 0
         while i < len(design):
             # print(f'In the loop - i: {i}, index: {index}, length: {length}, design: {design}')
@@ -31,16 +31,16 @@ def search_for_pattern(pattern, designs):
             i += 1
         # print(f'Out the loop - i: {i}, index: {index}, length: {length}, design: {design}')
         if i == len(design):
-            print(f'matched design, i: {i}, index + i: {index+i} (length: {length})')
+            # print(f'matched design, i: {i}, index + i: {index+i} (length: {length})')
             if index + i == length:
                 return True
             else:
                 j = index + i
                 attempts.extendleft([(design, j) for design in designs[pattern[j]]])
-        else:
-            print(f'no match')
-        print(f'deque: {attempts}')
-        input()
+        # else:
+        #     print(f'no match')
+        # print(f'deque: {attempts}')
+        # input()
 
 def read_lines(filename):
     patterns = []
