@@ -40,7 +40,7 @@ def main(args):
     #     print(f'{k}: {nodes[k]}')
     # print()
 
-    path, cost = dijkstra(start, finish, nodes, maze)
+    path, cost = dijkstra(this, finish, nodes)
     if path:
         plot(maze, invisible_walls=True, start=start, path=path)
         print(f'Cost by Dijkstra: {cost}')
@@ -118,10 +118,7 @@ def cost_path(path):
 def find_element(symbol, maze):
     return [(m.start(), j) for j, line in enumerate(maze) for m in re.finditer(symbol, ''.join(line))]
 
-def dijkstra(start, finish, nodes, maze):
-    sx, sy = start
-    start = (sx, sy, '>')
-
+def dijkstra(start, finish, nodes):
     # Mark all unvisited nodes with distance "infinite" from start - except start
     unvisited = list(nodes.keys())
     for node in unvisited:
@@ -139,29 +136,27 @@ def dijkstra(start, finish, nodes, maze):
         for v, (cost, path) in nodes[this]['nodes'].items():
             if v in unvisited:
                 new_cost = nodes[this]['cost'] + cost
-                if new_cost < nodes[v]['cost']:
+                if new_cost <= nodes[v]['cost']:
                     nodes[v]['cost'] = new_cost
-                    nodes[v]['prev_path'] = invert_path(path)
-                    nodes[v]['prev_node'] = this
+                    nodes[v].setdefault('prev_path', []).append(invert_path(path))
+                    nodes[v].setdefault('prev_node', []).append(this)
     if unvisited:
         return '', 0
 
-    # Builds path from finish to start for the 4 possible end nodes
+    # Builds path from finish to start
     fx, fy = finish
-    best_path = ''
-    best_cost = INFINITE
+    path = ''
+    cost = INFINITE
     for movement in MOVEMENTS.keys():
         finish = (fx, fy, movement)
         node = finish
-        if nodes[node]:
-            path = ''
+        if nodes[finish]:
             while node != start:
-                path += nodes[node]['prev_path']
-                node  = nodes[node]['prev_node']
-            if nodes[finish]['cost'] < best_cost:
-                best_cost = nodes[finish]['cost']
-                best_path = path
-    return invert_path(best_path), best_cost
+                path += nodes[node]['prev_path'][0]
+                node  = nodes[node]['prev_node'][0]
+            cost = nodes[finish]['cost']
+            break
+    return invert_path(path), cost
 
 def plot(maze, invisible_walls=False, start=None, path=None):
     # print(f'PLOT - start: {start}, path: {path}')
