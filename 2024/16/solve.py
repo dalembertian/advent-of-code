@@ -160,7 +160,6 @@ def dijkstra(start, finish, nodes):
 
 def plot(maze, invisible_walls=False, start=None, path=None):
     # print(f'PLOT - start: {start}, path: {path}')
-    cost = 0
     maze = [maze[y][:] for y in range(len(maze))]
     if not start:
         start = find_element('S', maze)[0]
@@ -168,7 +167,6 @@ def plot(maze, invisible_walls=False, start=None, path=None):
         x, y = start
         prev = path[0]
         for move in path:
-            cost += 1 if move == prev else 1001
             prev = move
             maze[y][x] = move
             dx, dy = MOVEMENTS[move]
@@ -178,7 +176,8 @@ def plot(maze, invisible_walls=False, start=None, path=None):
     for i, line in enumerate(maze):
         row = ''.join(line)
         if invisible_walls:
-            row = row.replace('#', ' ')
+            row = row.replace('.', ' ')
+            row = row.replace('#', '⋅')
         print(f'{i:03} {row} {i:03}')
     plot_ruler(maze)
     print()
