@@ -36,17 +36,20 @@ def main(args):
     x, y = start
     this = (x, y, '>')
     find_path(this, this, '', maze, nodes)
+    dijkstra(this, nodes)
     # for k in nodes.keys():
     #     print(f'{k}: {nodes[k]}')
     # print()
 
-    path, cost = dijkstra(this, finish, nodes)
-    if path:
-        plot(maze, invisible_walls=True, start=start, path=path)
-        print(f'Cost by Dijkstra: {cost}')
-    print(f'Nodes: {len(nodes)}')
-
+    path, cost = trace_back(this, finish, nodes)
     print(f'Part 1 - Cost of the shortest path: {cost}')
+    # plot(maze, invisible_walls=True, path=path)
+    # print(f'Cost by Dijkstra: {cost}')
+    # print(f'Nodes: {len(nodes)}')
+
+    steps = find_all_steps(this, finish, nodes)
+    print(f'Part 2 - Tiles that are part of ANY of the shortest paths: {len(steps)}')
+    plot(maze, invisible_walls=True, steps=steps)
 
 def find_path(this, prev, path, maze, nodes):
     x, y, m = this
@@ -118,7 +121,10 @@ def cost_path(path):
 def find_element(symbol, maze):
     return [(m.start(), j) for j, line in enumerate(maze) for m in re.finditer(symbol, ''.join(line))]
 
-def dijkstra(start, finish, nodes):
+def dijkstra(start, nodes):
+    # Travels graph finding smallest cost from start
+    # Returns False if not all nodes are connected
+
     # Mark all unvisited nodes with distance "infinite" from start - except start
     unvisited = list(nodes.keys())
     for node in unvisited:
@@ -136,14 +142,16 @@ def dijkstra(start, finish, nodes):
         for v, (cost, path) in nodes[this]['nodes'].items():
             if v in unvisited:
                 new_cost = nodes[this]['cost'] + cost
-                if new_cost <= nodes[v]['cost']:
+                if new_cost < nodes[v]['cost']:
+                    print(f'{this} -> {v} ({new_cost})')
+                    # input()
                     nodes[v]['cost'] = new_cost
                     nodes[v].setdefault('prev_path', []).append(invert_path(path))
                     nodes[v].setdefault('prev_node', []).append(this)
-    if unvisited:
-        return '', 0
+    return False if unvisited else True
 
-    # Builds path from finish to start
+def trace_back(start_node, finish, nodes):
+    # Builds path from finish (coordinates) to start (node)
     fx, fy = finish
     path = ''
     cost = INFINITE
@@ -151,14 +159,37 @@ def dijkstra(start, finish, nodes):
         finish = (fx, fy, movement)
         node = finish
         if nodes[finish]:
-            while node != start:
+            while node != start_node:
                 path += nodes[node]['prev_path'][0]
                 node  = nodes[node]['prev_node'][0]
             cost = nodes[finish]['cost']
             break
     return invert_path(path), cost
 
-def plot(maze, invisible_walls=False, start=None, path=None):
+def find_all_steps(start_node, finish, nodes):
+    steps = []
+    fx, fy = finish
+    for movement in MOVEMENTS.keys():
+        finish_node = (fx, fy, movement)
+        if nodes[finish_node]:
+            steps.extend(find_next_steps(start_node, finish_node, nodes))
+    return set(steps)
+
+def find_next_steps(start_node, this_node, nodes):
+    # print(f'FIND NEXT STEPS - start: {start_node}, this: {this_node}')
+    # input()
+    x, y , m = this_node
+    this_step = [(x, y)]
+    if this_node != start_node:
+        for prev_node, prev_path in zip(nodes[this_node]['prev_node'], nodes[this_node]['prev_path']):
+            for move in prev_path:
+                dx, dy = MOVEMENTS[move]
+                x, y = x+dx, y+dy
+                this_step.append((x, y))
+            this_step.extend(find_next_steps(start_node, prev_node, nodes))
+    return this_step
+
+def plot(maze, invisible_walls=False, start=None, path=None, steps=None):
     # print(f'PLOT - start: {start}, path: {path}')
     maze = [maze[y][:] for y in range(len(maze))]
     if not start:
@@ -171,6 +202,10 @@ def plot(maze, invisible_walls=False, start=None, path=None):
             maze[y][x] = move
             dx, dy = MOVEMENTS[move]
             x, y = x+dx, y+dy
+
+    if steps:
+        for x, y in steps:
+            maze[y][x] = 'O'
 
     plot_ruler(maze)
     for i, line in enumerate(maze):
