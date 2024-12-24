@@ -7,19 +7,7 @@ import sys
 
 from collections import defaultdict
 
-MOVEMENTS = {
-    '^': ( 0, -1),
-    '>': ( 1,  0),
-    'v': ( 0,  1),
-    '<': (-1,  0),
-}
-OPPOSITE = {
-    '^': 'v',
-    '>': '<',
-    'v': '^',
-    '<': '>',
-}
-INFINITE = float('inf')
+from dijkstra import *
 
 
 def main(args):
@@ -36,20 +24,25 @@ def main(args):
     x, y = start
     this = (x, y, '>')
     find_path(this, this, '', maze, nodes)
-    dijkstra(this, nodes)
-    # for k in nodes.keys():
-    #     print(f'{k}: {nodes[k]}')
-    # print()
+    find_shortest_path(this, nodes)
+    # print_nodes(nodes)
 
+    fx, fy = finish
+    for movement in MOVEMENTS.keys():
+        finish = (fx, fy, movement)
+        path, cost = trace_back(this, finish, nodes)
+        if path:
+            break
+ 
     path, cost = trace_back(this, finish, nodes)
     print(f'Part 1 - Cost of the shortest path: {cost}')
     # plot(maze, invisible_walls=True, path=path)
     # print(f'Cost by Dijkstra: {cost}')
     # print(f'Nodes: {len(nodes)}')
 
-    steps = find_all_steps(this, finish, nodes)
-    print(f'Part 2 - Tiles that are part of ANY of the shortest paths: {len(steps)}')
-    plot(maze, invisible_walls=True, steps=steps)
+    # steps = find_all_steps(this, finish, nodes)
+    # print(f'Part 2 - Tiles that are part of ANY of the shortest paths: {len(steps)}')
+    # plot(maze, invisible_walls=True, steps=steps)
 
 def find_path(this, prev, path, maze, nodes):
     x, y, m = this
@@ -107,9 +100,6 @@ def moves_from_here(this, maze):
     x, y, move = this
     return [m for m, (dx, dy) in MOVEMENTS.items() if m != OPPOSITE[move] and maze[y+dy][x+dx] != '#']
 
-def invert_path(path):
-    return ''.join([OPPOSITE[move] for move in path[::-1]])
-
 def cost_path(path):
     cost = 0
     move = path[0]
@@ -120,51 +110,6 @@ def cost_path(path):
 
 def find_element(symbol, maze):
     return [(m.start(), j) for j, line in enumerate(maze) for m in re.finditer(symbol, ''.join(line))]
-
-def dijkstra(start, nodes):
-    # Travels graph finding smallest cost from start
-    # Returns False if not all nodes are connected
-
-    # Mark all unvisited nodes with distance "infinite" from start - except start
-    unvisited = list(nodes.keys())
-    for node in unvisited:
-        nodes[node]['cost'] = INFINITE
-    nodes[start]['cost'] = 0
-
-    while unvisited:
-        # Get unvisited node with shortest distance to start
-        unvisited.sort(key=lambda n: nodes[n]['cost'])
-        this = unvisited.pop(0)
-        if nodes[this]['cost'] == INFINITE:
-            break
-
-        # Visits every node linked to this STILL IN unvisited
-        for v, (cost, path) in nodes[this]['nodes'].items():
-            if v in unvisited:
-                new_cost = nodes[this]['cost'] + cost
-                if new_cost < nodes[v]['cost']:
-                    print(f'{this} -> {v} ({new_cost})')
-                    # input()
-                    nodes[v]['cost'] = new_cost
-                    nodes[v].setdefault('prev_path', []).append(invert_path(path))
-                    nodes[v].setdefault('prev_node', []).append(this)
-    return False if unvisited else True
-
-def trace_back(start_node, finish, nodes):
-    # Builds path from finish (coordinates) to start (node)
-    fx, fy = finish
-    path = ''
-    cost = INFINITE
-    for movement in MOVEMENTS.keys():
-        finish = (fx, fy, movement)
-        node = finish
-        if nodes[finish]:
-            while node != start_node:
-                path += nodes[node]['prev_path'][0]
-                node  = nodes[node]['prev_node'][0]
-            cost = nodes[finish]['cost']
-            break
-    return invert_path(path), cost
 
 def find_all_steps(start_node, finish, nodes):
     steps = []
