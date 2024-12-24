@@ -41,12 +41,11 @@ def main(args):
     # TODO: implement a binary search!
     for i in range(len(walls) - first):
         insert_walls(walls[first+i: first+i+1], maze)
+        nodes  = defaultdict(dict)
         find_path(start, start, '>', maze, nodes)
-        find_shortest_path(start, nodes)
-        path, cost = trace_back(start, finish, nodes)
-        if not path:
+        if finish not in nodes.keys():
             break
-    print(f'Part 2 - No exit after {first+i} bytes fall, at {walls[first]}')
+    print(f'Part 2 - No exit after {first+i+1} bytes fall, at {walls[first+i]}')
 
 def find_path(this, prev, path, maze, nodes):
     x, y = this
