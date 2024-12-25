@@ -29,9 +29,9 @@ def main(args):
             r2s = keypad_strokes(r1, 'A', DIR_KEYPAD)
             for r2 in r2s:
                 r3s = keypad_strokes(r2, 'A', DIR_KEYPAD)
-                r3s.sort(key=lambda s: len(s))
-                if len(r3s[0]) < len(best_r3) or not best_r3:
-                    best_r3 = r3s[0]
+                for r3 in r3s:
+                    if len(r3) < len(best_r3) or not best_r3:
+                        best_r3 = r3
 
         code_num = int(re.search(r'(\d+)A*', code).group(1))
         code_len = len(best_r3)
