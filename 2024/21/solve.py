@@ -19,49 +19,37 @@ def main(args):
     setup_keypads()
     # for k in sorted(NUM_KEYPAD.keys()):
     #     print(k, NUM_KEYPAD[k])
-    # print(NUM_BLOCKS)
 
     # 185256 - too high
     total = 0
     for code in door_codes:
-        r1 = num_keypad_strokes(code)
-        r2 = dir_keypad_strokes(r1)
-        r3 = dir_keypad_strokes(r2)
+        best_r3 = ''
+        r1s = keypad_strokes(code, 'A', NUM_KEYPAD)
+        for r1 in r1s:
+            r2s = keypad_strokes(r1, 'A', DIR_KEYPAD)
+            for r2 in r2s:
+                r3s = keypad_strokes(r2, 'A', DIR_KEYPAD)
+                r3s.sort(key=lambda s: len(s))
+                if len(r3s[0]) < len(best_r3) or not best_r3:
+                    best_r3 = r3s[0]
+
         code_num = int(re.search(r'(\d+)A*', code).group(1))
-        code_len = len(r3)
+        code_len = len(best_r3)
         complexity = code_num * code_len
         total += complexity
-        print(f'code: {code} - {code_num:5} x {code_len:3} = {complexity:8} {''.join(r3)}')
+        print(f'code: {code} - {code_num:5} x {code_len:3} = {complexity:8} {''.join(best_r3)}')
     print()
     print(f'Part 1 - Complexity: {total}')
 
-def num_keypad_strokes(code):
-    # print(code)
-    start = 'A'
-    strokes = []
-    for symbol in code:
-        keys = NUM_KEYPAD[(start, symbol)]
-        if keys:
-            strokes.extend(keys)
-        strokes.append('A')
-        # print(strokes)
-        start = symbol
-    # print()
-    return strokes
 
-def dir_keypad_strokes(code):
-    # print(code)
-    start = 'A'
-    strokes = []
-    for symbol in code:
-        keys = DIR_KEYPAD[(start, symbol)]
-        if keys:
-            strokes.extend(keys)
-        strokes.append('A')
-        # print(strokes)
-        start = symbol
-    # print()
-    return strokes
+def keypad_strokes(code, start, keypad):
+    if code:
+        options = []
+        for path in keypad[(start, code[0])]:
+            options.extend([path + 'A' + p for p in keypad_strokes(code[1:], code[0], keypad)])
+        return options
+    else:
+        return ['']
 
 def read_lines(filename):
     with open(filename) as input:

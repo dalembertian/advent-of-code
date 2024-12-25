@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+from itertools import permutations
+
 MOVEMENTS = {
     '^': ( 0, -1),
     '>': ( 1,  0),
@@ -15,25 +17,36 @@ OPPOSITE = {
     '<': '>',
 }
 
+"""
++---+---+---+
+| 7 | 8 | 9 |
++---+---+---+
+| 4 | 5 | 6 |
++---+---+---+
+| 1 | 2 | 3 |
++---+---+---+
+    | 0 | A |
+    +---+---+
+"""
 NUM_KEYPAD = {
-    ('0', '1'): '^<',
+    ('0', '1'): ['^<'],
     ('0', '2'): '^',
     ('0', '3'): '^>',
-    ('0', '4'): '^^<',
+    ('0', '4'): ['^^<', '^<^'],
     ('0', '5'): '^^',
     ('0', '6'): '^^>',
-    ('0', '7'): '^^^<',
+    ('0', '7'): ['^^^<', '^^<^', '^<^^'],
     ('0', '8'): '^^^',
     ('0', '9'): '^^^>',
     ('0', 'A'): '>',
 
-    ('A', '1'): '^<<',
+    ('A', '1'): ['^<<', '<^<'],
     ('A', '2'): '^<',
     ('A', '3'): '^',
-    ('A', '4'): '^^<<',
+    ('A', '4'): ['^^<<', '^<^<', '^<<^', '<^^<', '<^<^'],
     ('A', '5'): '^^<',
     ('A', '6'): '^^',
-    ('A', '7'): '^^^<<',
+    ('A', '7'): ['^^<<^', '^<^^<', '<^^<^', '^^<^<', '^<<^^', '^<^<^', '<^^^<', '^^^<<', '<^<^^'],
     ('A', '8'): '^^^<',
     ('A', '9'): '^^^',
 
@@ -83,9 +96,16 @@ NUM_KEYPAD = {
 }
 NUM_BLOCKS = [('0', '1'), ('0', '4'), ('0', '7'), ('A', '1'), ('A', '4'), ('A', '7')]
 
+"""
+    +---+---+
+    | ^ | A |
++---+---+---+
+| < | v | > |
++---+---+---+
+"""
 DIR_KEYPAD = {
-    ('<', '^'): '>^',
-    ('<', 'A'): '>>^',
+    ('<', '^'): ['>^'],
+    ('<', 'A'): ['>>^', '>^>'],
     ('<', 'v'): '>',
     ('<', '>'): '>>',
 
@@ -100,17 +120,16 @@ DIR_KEYPAD = {
 }
 DIR_BLOCKS = [('<', '^'), ('<', 'A')]
 
+def setup_keypads():
+    develop_dictionary(NUM_KEYPAD, '0123456789A', NUM_BLOCKS)
+    develop_dictionary(DIR_KEYPAD, '^>v<A', DIR_BLOCKS)
+
+def develop_dictionary(keypad, keys, blocks):
+    for key in keypad.keys():
+        if key not in blocks:
+            keypad[key] = [''.join(l) for l in list(set(permutations(keypad[key])))]
+    keypad.update({(v, k): [invert_path(p) for p in paths] for (k, v), paths in keypad.items()})
+    keypad.update({(k, k): [''] for k in keys})
+
 def invert_path(path):
     return ''.join([OPPOSITE[move] for move in path[::-1]])
-
-def setup_keypads():
-    NUM_KEYPAD.update([((v, k), invert_path(p)) for (k, v), p in NUM_KEYPAD.items()])
-    NUM_KEYPAD.update({(k, k): '' for k in range(9)})
-    NUM_KEYPAD[('A', 'A')] = ''
-
-    DIR_KEYPAD.update([((v, k), invert_path(p)) for (k, v), p in DIR_KEYPAD.items()])
-    DIR_KEYPAD.update({(k, k): '' for k in MOVEMENTS.keys()})
-    DIR_KEYPAD[('A', 'A')] = ''
-
-    NUM_BLOCKS.extend([(j, i) for i, j in NUM_BLOCKS])
-    DIR_BLOCKS.extend([(j, i) for i, j in DIR_BLOCKS])
