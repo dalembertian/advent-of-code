@@ -7,40 +7,46 @@ from re import compile
 
 def main(args):
     designs, patterns = read_lines(args.filename)
-    print(designs)
-    print(patterns)
-    print()
+    # print(designs)
+    # print(patterns)
+    # print()
 
-    print(f'Part 1 - {[search_for_pattern(pattern, designs) for pattern in patterns].count(True)} designs are possible.')
+    print(f'Part 1 - {[search_for_pattern(pattern, designs) for pattern in patterns].count(1)} designs are possible.')
+
     # for pattern in patterns:
-    #     print(f'{pattern} is {'doable' if search_for_pattern(pattern, designs) else 'impossible'}')
+    #     if search_for_pattern(pattern, designs):
+    #         print(f'{pattern} can be done in {search_for_pattern(pattern, designs, count=True)}')
 
-def search_for_pattern(pattern, designs):
+    print(f'Part 2 - different ways to make designs: {sum([search_for_pattern(pattern, designs, count=True) for pattern in patterns])}')
+
+def search_for_pattern(pattern, designs, count=False):
     length = len(pattern)
-    # print(f'pattern: {pattern}, length: {length}')
+    success = 0
 
+    # print(pattern)
     attempts = deque([(design, 0) for design in designs[pattern[0]] if pattern.startswith(design)])
     while attempts:
+        # if count:
+        #     print(attempts)
         design, index = attempts.popleft()
-        # print(f'design: {design}, index: {index}')
         i = 0
         while i < len(design):
-            # print(f'In the loop - i: {i}, index: {index}, length: {length}, design: {design}')
             if index + i == length or design[i] != pattern[index + i]:
                 break
             i += 1
-        # print(f'Out the loop - i: {i}, index: {index}, length: {length}, design: {design}')
         if i == len(design):
-            # print(f'matched design, i: {i}, index + i: {index+i} (length: {length})')
             if index + i == length:
-                return True
+                if count:
+                    success += 1
+                    # print(f'success :{success}!')
+                    while attempts and attempts[0][0][0] == pattern[index]:
+                        attempts.popleft()
+                else:
+                    return 1
             else:
                 j = index + i
-                attempts.extendleft([(design, j) for design in designs[pattern[j]]])
-        # else:
-        #     print(f'no match')
-        # print(f'deque: {attempts}')
-        # input()
+                attempts.extendleft([(design, j) for design in designs[pattern[j]] if pattern[j:].startswith(design) and len(design) <= length-j])
+    return success
 
 def read_lines(filename):
     patterns = []
