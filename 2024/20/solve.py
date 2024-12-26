@@ -8,13 +8,6 @@ from collections import defaultdict
 
 from dijkstra import *
 
-CHEATS = {
-    '^': (1, 0),
-    '>': (0, 1),
-    'v': (1, 0),
-    '<': (0, 1),
-}
-
 
 def main(args):
     maze   = read_maze(args.filename)
@@ -27,8 +20,8 @@ def main(args):
     # print_nodes(nodes)
 
     path, cost = trace_back(start, finish, nodes)
-    plot(maze, invisible_walls=True, path=path)
-    print(f'Cost by Dijkstra: {cost}')
+    # plot(maze, invisible_walls=True, path=path)
+    # print(f'Cost by Dijkstra: {cost}')
     # print(f'Nodes: {len(nodes)}')
 
     cheats = find_cheats(maze, start, path)
@@ -38,13 +31,14 @@ def main(args):
     for cheat in cheats:
         p, c = try_cheat(maze, cheat, start, finish)
         saves.append(cost - c)
-    saves.sort()
-    print(saves)
+    # saves.sort()
+
+    print(f'Part 1 - Cheats that save at least 100 picosseconds: {len([s for s in saves if s >= 100])}')
 
 def try_cheat(maze, cheat, start, finish):
     maze = [maze[y][:] for y in range(len(maze))]
-    (wx, wy), (cx, cy) = cheat
-    maze[wy][wx] = '.'
+    x, y = cheat
+    maze[y][x] = '.'
 
     nodes = defaultdict(dict)
     find_path(start, start, '', maze, nodes)
@@ -59,14 +53,12 @@ def find_cheats(maze, start, path):
     x, y = start
     cheats = []
     for move in path:
-        dx, dy = CHEATS[move]
-        if maze[y-dy][x-dx] == '#' and maze[y-2*dy][x-2*dx] != '#':
-            cheats.append(((x-dx, y-dy), (x-2*dx, y-2*dy)))
-        if maze[y+dy][x+dx] == '#' and maze[y+2*dy][x+2*dx] != '#':
-            cheats.append(((x+dx, y+dy), (x+2*dx, y+2*dy)))
+        for dx, dy in [(i, j) for m, (i, j) in MOVEMENTS.items() if m != move]:
+            if maze[y+dy][x+dx] == '#' and maze[y+2*dy][x+2*dx] != '#':
+                cheats.append((x+dx, y+dy))
         dx, dy = MOVEMENTS[move]
         x, y = x+dx, y+dy
-    return cheats
+    return set(cheats)
 
 def find_path(this, prev, path, maze, nodes):
     x, y = this
