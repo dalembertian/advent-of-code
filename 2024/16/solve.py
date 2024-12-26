@@ -3,91 +3,118 @@
 
 import argparse
 import re
+import sys
 
 from collections import defaultdict
 
-MOVEMENTS = {
-    '^': ( 0, -1),
-    '>': ( 1,  0),
-    'v': ( 0,  1),
-    '<': (-1,  0),
-}
-OPPOSITE = {
-    '^': 'v',
-    '>': '<',
-    'v': '^',
-    '<': '>',
-}
-INFINITE = float('inf')
+from dijkstra import *
 
 
 def main(args):
+    sys.setrecursionlimit(2000)
+
     maze = read_lines(args.filename)
-    plot(maze)
+    S = find_element('S', maze)[0]
+    E = find_element('E', maze)[0]
+    # plot(maze)
+    # print()
 
-    nodes  = defaultdict(dict)
-    start  = find_element('S', maze)[0]
-    finish = find_element('E', maze)[0]
-    find_path(start, '>', start, 0, '', maze, nodes)
-    # Two problems with the nodes collected:
-    # 1. The distances are wrong, because the path to get to a certain node will
-    #    influence the NEXT paths going out (because of the orientation of the reindeer).
-    #    Fixing this will be a PITA.
-    # 2. The recursive approach to give each and every step was a mistake: the stack is
-    #    overflowing even for Part 1. A possible fix would be to follow unique paths
-    #    iteratively, and throw new paths to follow (after a node) to a list.
+    x, y = S
+    start = (x, y, '>')
+    nodes = defaultdict(dict)
+    find_path(start, start, '', maze, nodes)
+    find_shortest_path(start, nodes)
+    # print_nodes(nodes)
 
-    for k in nodes.keys():
-        print(f'{k}: {nodes[k]}')
-    print()
+    finish = find_best_finish(start, E, nodes)
+    path, cost = trace_back(start, finish, nodes)
+    # plot(maze, invisible_walls=True, path=path)
+    # print(f'Cost by Dijkstra: {cost}')
+    # print(f'Nodes: {len(nodes)}')
+    print(f'Part 1 - Cost of the shortest path: {cost}')
 
-    path, cost = dijkstra(start, nodes, maze)
-    if path:
-        plot(maze, start, path)
-        print(f'Cost by Dijkstra: {cost}')
+    steps = find_all_steps(start, finish, nodes)
+    # plot(maze, invisible_walls=True, steps=steps)
+    print(f'Part 2 - Tiles that are part of ANY of the shortest paths: {len(steps)}')
 
-def find_path(visit, move, previous, initial_cost, path, maze, nodes):
-    x, y = visit
-    path += move
+def find_best_finish(start, E, nodes):
+    best_cost = INFINITE
+    best_finish = None
+    fx, fy = E
+    for movement in MOVEMENTS.keys():
+        finish = (fx, fy, movement)
+        path, cost = trace_back(start, finish, nodes)
+        # print(f'Finish: {finish}, cost: {cost}')
+        if cost < best_cost:
+            best_cost = cost
+            best_finish = finish
+    return best_finish
 
-    # for k in nodes.keys():
-    #     print(f'{k}: {nodes[k]}')
-    # plot(maze, visit, move)
-    # print(f'From: {previous}')
-    # input()
+def find_all_steps(start, finish, nodes):
+    if finish == start:
+        x, y, m = start
+        return [(x, y)]
+    else:
+        steps = set()
+        for node, path in zip(nodes[finish]['prev_node'], nodes[finish]['prev_path']):
+            x, y, m = finish
+            for move in path:
+                steps.add((x, y))
+                dx, dy = MOVEMENTS[move]
+                x, y = x+dx, y+dy
+            steps.update(find_all_steps(start, node, nodes))
+    return steps
 
-    if maze[y][x] in (' ', 'E'):
-        add_node(visit, previous, initial_cost, path, nodes)
-        return
+def find_path(this, prev, path, maze, nodes):
+    x, y, m = this
 
-    if maze[y][x] == 'S':
-        path = ''
+    moves = moves_from_here(this, maze)
+    
+    # If it's a single path ahead, keep moving
+    while len(moves) == 1:
+        move = moves[0]
+        path += move
+        dx, dy = MOVEMENTS[move]
+        x, y, m = x+dx, y+dy, move
+        this = (x, y, m)
 
-    maze[y][x] = ' '
-    moves = [m for m, (dx, dy) in MOVEMENTS.items() if m != OPPOSITE[move] and maze[y+dy][x+dx] != '#']
-    if len(moves) > 1 and path:
-        add_node(visit, previous, initial_cost, path, nodes)
-        previous = visit
-        path = ''
+        # Might encounter START or END in a single path
+        if maze[y][x] in ('S', 'E'): 
+            add_node(this, prev, path, nodes)
+            find_path(this, this, '', maze, nodes)
+            return
 
-    for m in moves:
-        dx, dy = MOVEMENTS[m]
-        if m != OPPOSITE[move] and maze[y+dy][x+dx] != '#':
-            cost = initial_cost if path != '' else (0 if m == move else 1000)
-            find_path((x+dx, y+dy), m, previous, cost, path, maze, nodes)
+        moves = moves_from_here(this, maze)
 
-def add_node(this, previous, initial_cost, path, nodes):
-    new_cost = initial_cost + cost_path(path)
-    prev_nodes = nodes[previous].setdefault('nodes', {})
+    # If it's a node...
+    if len(moves) > 1:
+        if this in nodes.keys():
+            # ... already visited, just finish the path to it
+            add_node(this, prev, path, nodes)
+        else:
+            # ... never seen before, mark it and try every path out of it
+            for move in moves:
+                dx, dy = MOVEMENTS[move]
+                add_node(this, prev, path, nodes)
+                find_path((x+dx, y+dy, move), (x, y, m), move, maze, nodes)
+
+    # If there are no moves to be made, it's a dead end, ignore
+    # if len(moves) < 0...
+
+def add_node(this, prev, path, nodes):
+    prev_nodes = nodes[prev].setdefault('nodes', {})
     this_nodes = nodes[this].setdefault('nodes', {})
-    # Only add a node if it's shorter then previous parallel one
-    old_cost, old_path = this_nodes.get(previous, (INFINITE, ''))
-    if new_cost < old_cost:
-        nodes[previous]['nodes'][this] = (new_cost, path)
-        nodes[this]['nodes'][previous] = (new_cost, invert_path(path))
+    cost = 0 if not path else (cost_path(path) + (0 if prev[2] == path[0] else 1000))
 
-def invert_path(path):
-    return ''.join([OPPOSITE[move] for move in path[::-1]])
+    # Only add a node if it's shorter then prev parallel one
+    old_cost, old_path = this_nodes.get(prev, (INFINITE, ''))
+    if cost < old_cost:
+        nodes[prev]['nodes'][this] = (cost, path)
+        nodes[this]['nodes'][prev] = (cost, invert_path(path))
+
+def moves_from_here(this, maze):
+    x, y, move = this
+    return [m for m, (dx, dy) in MOVEMENTS.items() if m != OPPOSITE[move] and maze[y+dy][x+dx] != '#']
 
 def cost_path(path):
     cost = 0
@@ -100,66 +127,39 @@ def cost_path(path):
 def find_element(symbol, maze):
     return [(m.start(), j) for j, line in enumerate(maze) for m in re.finditer(symbol, ''.join(line))]
 
-def dijkstra(start, nodes, maze):
-    # Mark all unvisited nodes with distance "infinite" from start - except start
-    unvisited = list(nodes.keys())
-    for node in unvisited:
-        nodes[node]['cost'] = INFINITE
-    nodes[start]['cost'] = 0
-
-    while unvisited:
-        # Get unvisited node with shortest distance to start
-        unvisited.sort(key=lambda n: nodes[n]['cost'])
-        # plot(maze)
-        # print(unvisited)
-        this = unvisited.pop(0)
-        if nodes[this]['cost'] == INFINITE:
-            break
-
-        # Visits every node linked to this STILL IN unvisited
-        # print(this)
-        for v, (cost, path) in nodes[this]['nodes'].items():
-            if v in unvisited:
-                # print(v, nodes[v].get('prev_node', None), nodes[v].get('cost', None), end='')
-                new_cost = nodes[this]['cost'] + cost
-                if new_cost < nodes[v]['cost']:
-                    nodes[v]['cost'] = new_cost
-                    nodes[v]['prev_path'] = invert_path(path)
-                    nodes[v]['prev_node'] = this
-        #             print(' -> ', nodes[v]['prev_node'], nodes[v]['cost'], end='')
-        #         print()
-        # print()
-        # input()
-    if unvisited:
-        return '', 0
-
-    # Builds path from finish to start
-    finish = find_element('E', maze)[0]
-    node = finish
-    path = ''
-    while node != start:
-        print(f'{str(node):8} -> {str(nodes[node]['prev_node']):8}: {nodes[node]['cost']:5} {nodes[node]['prev_path']}')
-        path += nodes[node]['prev_path']
-        node  = nodes[node]['prev_node']
-    return invert_path(path), nodes[finish]['cost']
-
-def plot(maze, start=None, path=None):
-    cost = 0
+def plot(maze, invisible_walls=False, start=None, path=None, steps=None):
+    # print(f'PLOT - start: {start}, path: {path}')
     maze = [maze[y][:] for y in range(len(maze))]
-    if start and path:
+    if not start:
+        start = find_element('S', maze)[0]
+    if path:
         x, y = start
-        previous = path[0]
+        prev = path[0]
         for move in path:
-            cost += 1 if move == previous else 1001
-            previous = move
+            prev = move
             maze[y][x] = move
             dx, dy = MOVEMENTS[move]
             x, y = x+dx, y+dy
-    print(f'    {''.join([str(i // 10) if i >= 10 else ' ' for i in range(len(maze[0]))])}')
-    print(f'    {''.join([str(i % 10) for i in range(len(maze[0]))])}')
+
+    if steps:
+        for x, y in steps:
+            maze[y][x] = 'O'
+
+    plot_ruler(maze)
     for i, line in enumerate(maze):
-        print(f'{i:03} {''.join(line)}')
-    print(f'Cost: {cost}')
+        row = ''.join(line)
+        if invisible_walls:
+            row = row.replace('.', ' ')
+            row = row.replace('#', '⋅')
+        print(f'{i:03} {row} {i:03}')
+    plot_ruler(maze)
+    print()
+
+def plot_ruler(maze):
+    if len(maze[0]) >= 100:
+        print(f'    {''.join([str(i // 100) if i >= 100 else ' ' for i in range(len(maze[0]))])}')
+    print(f'    {''.join([str(i % 100 // 10) if i >= 10 else ' ' for i in range(len(maze[0]))])}')
+    print(f'    {''.join([str(i % 10) for i in range(len(maze[0]))])}')
 
 def read_lines(filename):
     with open(filename) as lines:
