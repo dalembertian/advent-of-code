@@ -14,35 +14,64 @@ def main(args):
     sys.setrecursionlimit(2000)
 
     maze = read_lines(args.filename)
+    S = find_element('S', maze)[0]
+    E = find_element('E', maze)[0]
     # plot(maze)
     # print()
 
-    nodes  = defaultdict(dict)
-    start  = find_element('S', maze)[0]
-    finish = find_element('E', maze)[0]
+    x, y = S
+    start = (x, y, '>')
+    nodes = defaultdict(dict)
+    find_path(start, start, '', maze, nodes)
+    find_shortest_path(start, nodes)
+    print_nodes(nodes)
 
-    x, y = start
-    this = (x, y, '>')
-    find_path(this, this, '', maze, nodes)
-    find_shortest_path(this, nodes)
-    # print_nodes(nodes)
-
-    fx, fy = finish
-    for movement in MOVEMENTS.keys():
-        finish = (fx, fy, movement)
-        path, cost = trace_back(this, finish, nodes)
-        if path:
-            break
- 
-    path, cost = trace_back(this, finish, nodes)
+    finish = find_best_finish(start, E, nodes)
+    path, cost = trace_back(start, finish, nodes)
     print(f'Part 1 - Cost of the shortest path: {cost}')
-    # plot(maze, invisible_walls=True, path=path)
-    # print(f'Cost by Dijkstra: {cost}')
+    plot(maze, invisible_walls=True, path=path)
+    print(f'Cost by Dijkstra: {cost}')
     # print(f'Nodes: {len(nodes)}')
 
-    # steps = find_all_steps(this, finish, nodes)
+    # steps = find_all_steps(start, finish, nodes)
     # print(f'Part 2 - Tiles that are part of ANY of the shortest paths: {len(steps)}')
     # plot(maze, invisible_walls=True, steps=steps)
+
+def find_best_finish(start, E, nodes):
+    best_cost = INFINITE
+    best_finish = None
+    fx, fy = E
+    for movement in MOVEMENTS.keys():
+        finish = (fx, fy, movement)
+        path, cost = trace_back(start, finish, nodes)
+        if cost < best_cost:
+            best_cost = cost
+            best_finish = finish
+    return best_finish
+
+def find_all_steps(start, finish, nodes):
+    steps = []
+    fx, fy, fm = finish
+    for movement in MOVEMENTS.keys():
+        finish_node = (fx, fy, movement)
+        if nodes[finish_node]:
+            print(nodes[finish_node]['cost'])
+            steps.extend(find_next_steps(start, finish_node, nodes))
+    return set(steps)
+
+def find_next_steps(start, this, nodes):
+    # print(f'FIND NEXT STEPS - start: {start}, this: {this}')
+    # input()
+    x, y , m = this
+    this_step = [(x, y)]
+    if this != start:
+        for prev_node, prev_path in zip(nodes[this]['prev_node'], nodes[this]['prev_path']):
+            for move in prev_path:
+                dx, dy = MOVEMENTS[move]
+                x, y = x+dx, y+dy
+                this_step.append((x, y))
+            this_step.extend(find_next_steps(start, prev_node, nodes))
+    return this_step
 
 def find_path(this, prev, path, maze, nodes):
     x, y, m = this
@@ -110,29 +139,6 @@ def cost_path(path):
 
 def find_element(symbol, maze):
     return [(m.start(), j) for j, line in enumerate(maze) for m in re.finditer(symbol, ''.join(line))]
-
-def find_all_steps(start_node, finish, nodes):
-    steps = []
-    fx, fy = finish
-    for movement in MOVEMENTS.keys():
-        finish_node = (fx, fy, movement)
-        if nodes[finish_node]:
-            steps.extend(find_next_steps(start_node, finish_node, nodes))
-    return set(steps)
-
-def find_next_steps(start_node, this_node, nodes):
-    # print(f'FIND NEXT STEPS - start: {start_node}, this: {this_node}')
-    # input()
-    x, y , m = this_node
-    this_step = [(x, y)]
-    if this_node != start_node:
-        for prev_node, prev_path in zip(nodes[this_node]['prev_node'], nodes[this_node]['prev_path']):
-            for move in prev_path:
-                dx, dy = MOVEMENTS[move]
-                x, y = x+dx, y+dy
-                this_step.append((x, y))
-            this_step.extend(find_next_steps(start_node, prev_node, nodes))
-    return this_step
 
 def plot(maze, invisible_walls=False, start=None, path=None, steps=None):
     # print(f'PLOT - start: {start}, path: {path}')
