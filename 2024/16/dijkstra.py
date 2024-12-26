@@ -37,9 +37,11 @@ def find_shortest_path(start, nodes):
             if v in unvisited:
                 new_cost = nodes[this]['cost'] + cost
                 if new_cost <= nodes[v]['cost']:
-                    # print(f'{this} -> {v} ({new_cost})')
-                    # input()
-                    nodes[v]['cost'] = new_cost
+                    # Remember to F* CLEAR THE LIST!!! when a shorter path is found...
+                    if new_cost < nodes[v]['cost']:
+                        nodes[v]['cost'] = new_cost
+                        nodes[v].setdefault('prev_path', []).clear()
+                        nodes[v].setdefault('prev_node', []).clear()
                     nodes[v].setdefault('prev_path', []).append(invert_path(path))
                     nodes[v].setdefault('prev_node', []).append(this)
     return False if unvisited else True
@@ -49,8 +51,10 @@ def trace_back(start, finish, nodes):
     path = ''
     cost = INFINITE
     node = finish
+    sx, sy, sm = start
+    starts = [(sx, sy, m) for m in MOVEMENTS.keys()]
     if nodes[finish]:
-        while node != start:
+        while node not in starts:
             path += nodes[node]['prev_path'][0]
             node  = nodes[node]['prev_node'][0]
         cost = nodes[finish]['cost']
