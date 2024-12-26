@@ -8,20 +8,65 @@ from collections import defaultdict
 
 from dijkstra import *
 
+CHEATS = {
+    '^': (1, 0),
+    '>': (0, 1),
+    'v': (1, 0),
+    '<': (0, 1),
+}
+
 
 def main(args):
     maze   = read_maze(args.filename)
-    nodes  = defaultdict(dict)
     start  = find_element('S', maze)[0]
     finish = find_element('E', maze)[0]
 
+    nodes = defaultdict(dict)
     find_path(start, start, '', maze, nodes)
     find_shortest_path(start, nodes)
+    # print_nodes(nodes)
 
     path, cost = trace_back(start, finish, nodes)
-    # plot(maze, invisible_walls=False, path=path)
-    # print(f'Cost by Dijkstra: {cost}')
+    plot(maze, invisible_walls=True, path=path)
+    print(f'Cost by Dijkstra: {cost}')
     # print(f'Nodes: {len(nodes)}')
+
+    cheats = find_cheats(maze, start, path)
+    # print(cheats)
+
+    saves = []
+    for cheat in cheats:
+        p, c = try_cheat(maze, cheat, start, finish)
+        saves.append(cost - c)
+    saves.sort()
+    print(saves)
+
+def try_cheat(maze, cheat, start, finish):
+    maze = [maze[y][:] for y in range(len(maze))]
+    (wx, wy), (cx, cy) = cheat
+    maze[wy][wx] = '.'
+
+    nodes = defaultdict(dict)
+    find_path(start, start, '', maze, nodes)
+    find_shortest_path(start, nodes)
+    path, cost = trace_back(start, finish, nodes)
+    # plot(maze, invisible_walls=True, path=path)
+    # print(f'Cost by Dijkstra: {cost}')
+    # input()
+    return path, cost
+
+def find_cheats(maze, start, path):
+    x, y = start
+    cheats = []
+    for move in path:
+        dx, dy = CHEATS[move]
+        if maze[y-dy][x-dx] == '#' and maze[y-2*dy][x-2*dx] != '#':
+            cheats.append(((x-dx, y-dy), (x-2*dx, y-2*dy)))
+        if maze[y+dy][x+dx] == '#' and maze[y+2*dy][x+2*dx] != '#':
+            cheats.append(((x+dx, y+dy), (x+2*dx, y+2*dy)))
+        dx, dy = MOVEMENTS[move]
+        x, y = x+dx, y+dy
+    return cheats
 
 def find_path(this, prev, path, maze, nodes):
     x, y = this
@@ -91,9 +136,7 @@ def plot(maze, invisible_walls=False, start=None, path=None):
         start = find_element('S', maze)[0]
     if path:
         x, y = start
-        prev = path[0]
         for move in path:
-            prev = move
             maze[y][x] = move
             dx, dy = MOVEMENTS[move]
             x, y = x+dx, y+dy
@@ -116,7 +159,10 @@ def plot_ruler(maze):
 
 def read_maze(filename):
     with open(filename) as lines:
-        return [[p for p in line.strip()] for line in lines]
+        maze = [['#'] + [p for p in line.strip()] + ['#'] for line in lines]
+    maze.insert(0, ['#'] * len(maze[0]))
+    maze.append(['#'] * len(maze[0]))
+    return maze
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
