@@ -36,7 +36,7 @@ def find_shortest_path(start, nodes):
         for v, (cost, path) in nodes[this]['nodes'].items():
             if v in unvisited:
                 new_cost = nodes[this]['cost'] + cost
-                if new_cost < nodes[v]['cost']:
+                if new_cost <= nodes[v]['cost']:
                     # print(f'{this} -> {v} ({new_cost})')
                     # input()
                     nodes[v]['cost'] = new_cost

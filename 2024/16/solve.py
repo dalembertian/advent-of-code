@@ -24,18 +24,18 @@ def main(args):
     nodes = defaultdict(dict)
     find_path(start, start, '', maze, nodes)
     find_shortest_path(start, nodes)
-    print_nodes(nodes)
+    # print_nodes(nodes)
 
     finish = find_best_finish(start, E, nodes)
     path, cost = trace_back(start, finish, nodes)
     print(f'Part 1 - Cost of the shortest path: {cost}')
-    plot(maze, invisible_walls=True, path=path)
-    print(f'Cost by Dijkstra: {cost}')
+    # plot(maze, invisible_walls=True, path=path)
+    # print(f'Cost by Dijkstra: {cost}')
     # print(f'Nodes: {len(nodes)}')
 
-    # steps = find_all_steps(start, finish, nodes)
-    # print(f'Part 2 - Tiles that are part of ANY of the shortest paths: {len(steps)}')
-    # plot(maze, invisible_walls=True, steps=steps)
+    steps = find_all_steps(start, finish, nodes)
+    print(f'Part 2 - Tiles that are part of ANY of the shortest paths: {len(steps)}')
+    plot(maze, invisible_walls=True, steps=steps)
 
 def find_best_finish(start, E, nodes):
     best_cost = INFINITE
@@ -50,14 +50,19 @@ def find_best_finish(start, E, nodes):
     return best_finish
 
 def find_all_steps(start, finish, nodes):
-    steps = []
-    fx, fy, fm = finish
-    for movement in MOVEMENTS.keys():
-        finish_node = (fx, fy, movement)
-        if nodes[finish_node]:
-            print(nodes[finish_node]['cost'])
-            steps.extend(find_next_steps(start, finish_node, nodes))
-    return set(steps)
+    if finish == start:
+        x, y, m = start
+        return [(x, y)]
+    else:
+        steps = set()
+        for node, path in zip(nodes[finish]['prev_node'], nodes[finish]['prev_path']):
+            x, y, m = finish
+            for move in path:
+                steps.add((x, y))
+                dx, dy = MOVEMENTS[move]
+                x, y = x+dx, y+dy
+            steps.update(find_all_steps(start, node, nodes))
+    return steps
 
 def find_next_steps(start, this, nodes):
     # print(f'FIND NEXT STEPS - start: {start}, this: {this}')
