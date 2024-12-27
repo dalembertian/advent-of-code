@@ -4,4 +4,4 @@ I have never participated in the AoC before, started this year (2024). Let's see
 
 https://adventofcode.com/2024/
 
-![Advent of Code 2024](/AoC_2024_image.png)
+![Advent of Code 2024](/2024/AoC_2024_image.png)
