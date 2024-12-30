@@ -133,3 +133,20 @@ def develop_dictionary(keypad, keys, blocks):
 
 def invert_path(path):
     return ''.join([OPPOSITE[move] for move in path[::-1]])
+
+def first_keypad_strokes(code, start, keypad):
+    strokes = ''
+    for symbol in code:
+        strokes += keypad[(start, symbol)][0]
+        strokes += 'A'
+        start = symbol
+    return strokes
+
+def all_keypad_strokes(code, start, keypad):
+    if code:
+        options = []
+        for path in keypad[(start, code[0])]:
+            options.extend([path + 'A' + p for p in all_keypad_strokes(code[1:], code[0], keypad)])
+        return options
+    else:
+        return ['']
