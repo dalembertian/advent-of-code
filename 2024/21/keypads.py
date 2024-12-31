@@ -130,23 +130,20 @@ def develop_dictionary(keypad, keys, blocks):
             keypad[key] = [''.join(l) for l in list(set(permutations(keypad[key])))]
     keypad.update({(v, k): [invert_path(p) for p in paths] for (k, v), paths in keypad.items()})
     keypad.update({(k, k): [''] for k in keys})
+    for k in keypad.keys():
+        keypad[k] = [e + 'A' for e in keypad[k]]
 
 def invert_path(path):
     return ''.join([OPPOSITE[move] for move in path[::-1]])
 
 def first_keypad_strokes(code, start, keypad):
-    strokes = ''
-    for symbol in code:
-        strokes += keypad[(start, symbol)][0]
-        strokes += 'A'
-        start = symbol
-    return strokes
+    return ''.join([keypad[(i, j)][0] for i, j in zip('A'+code, code)])
 
 def all_keypad_strokes(code, start, keypad):
     if code:
         options = []
         for path in keypad[(start, code[0])]:
-            options.extend([path + 'A' + p for p in all_keypad_strokes(code[1:], code[0], keypad)])
+            options.extend([path + p for p in all_keypad_strokes(code[1:], code[0], keypad)])
         return options
     else:
         return ['']
