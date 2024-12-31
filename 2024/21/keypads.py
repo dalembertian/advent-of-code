@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+from functools import cache
 from itertools import permutations
 
 MOVEMENTS = {
@@ -147,3 +148,13 @@ def all_keypad_strokes(code, start, keypad):
         return options
     else:
         return ['']
+
+@cache
+def count_dir_keypad_strokes(seq, level):
+    if level == 1:
+        return sum([len(DIR_KEYPAD[(i, j)][0]) for i, j in zip('A'+seq, seq)])
+    else:
+        strokes = 0
+        for i, j in zip('A'+seq, seq):
+            strokes += min([count_dir_keypad_strokes(subseq, level-1) for subseq in DIR_KEYPAD[(i, j)]])
+        return strokes

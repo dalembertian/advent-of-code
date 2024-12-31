@@ -4,16 +4,27 @@
 import argparse
 import re
 
+from functools import reduce
+
 from keypads import *
 
 
 def main(args):
     door_codes = read_lines(args.filename)
-
     setup_keypads()
 
     print(f'Part 1 - Complexity: {run_steps(door_codes, 2)}')
+    print(f'Part 2 - Complexity: {count_steps(door_codes, 25)}')
 
+def count_steps(door_codes, robots):
+    total = 0
+    for code in door_codes:
+        combos = all_keypad_strokes(code, 'A', NUM_KEYPAD)
+        combos = [sum([count_dir_keypad_strokes(seq+'A', robots) for seq in combo.split('A')[:-1]]) for combo in combos]
+        best = min(combos)
+        code_num = int(re.search(r'(\d+)A*', code).group(1))
+        total += code_num * best
+    return total
 
 def run_steps(door_codes, robots):
     total = 0
@@ -22,15 +33,13 @@ def run_steps(door_codes, robots):
         for i in range(robots):
             # For 2 robots, both approaches work: taking the first sequence of strokes, or...
             combos = [first_keypad_strokes(combo, 'A', DIR_KEYPAD) for combo in combos]
+            
             # ...looking for the best. But the latter is WAY slower.
-            # metacombos = []
-            # for combo in combos:
-            #     metacombos.extend(all_keypad_strokes(combo, 'A', DIR_KEYPAD))
-            # combos = metacombos
+            # combos = reduce(lambda x,y: x + y, [all_keypad_strokes(combo, 'A', DIR_KEYPAD) for combo in combos])
+
         best = min(combos, key=lambda c: len(c))
         code_num = int(re.search(r'(\d+)A*', code).group(1))
-        code_len = len(best)
-        total += code_num * code_len
+        total += code_num * len(best)
     return total
 
 def read_lines(filename):
