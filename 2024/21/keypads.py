@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+from functools import cache
 from itertools import permutations
 
 MOVEMENTS = {
@@ -130,6 +131,30 @@ def develop_dictionary(keypad, keys, blocks):
             keypad[key] = [''.join(l) for l in list(set(permutations(keypad[key])))]
     keypad.update({(v, k): [invert_path(p) for p in paths] for (k, v), paths in keypad.items()})
     keypad.update({(k, k): [''] for k in keys})
+    for k in keypad.keys():
+        keypad[k] = [e + 'A' for e in keypad[k]]
 
 def invert_path(path):
     return ''.join([OPPOSITE[move] for move in path[::-1]])
+
+def first_keypad_strokes(code, start, keypad):
+    return ''.join([keypad[(i, j)][0] for i, j in zip('A'+code, code)])
+
+def all_keypad_strokes(code, start, keypad):
+    if code:
+        options = []
+        for path in keypad[(start, code[0])]:
+            options.extend([path + p for p in all_keypad_strokes(code[1:], code[0], keypad)])
+        return options
+    else:
+        return ['']
+
+@cache
+def count_dir_keypad_strokes(seq, level):
+    if level == 1:
+        return sum([len(DIR_KEYPAD[(i, j)][0]) for i, j in zip('A'+seq, seq)])
+    else:
+        strokes = 0
+        for i, j in zip('A'+seq, seq):
+            strokes += min([count_dir_keypad_strokes(subseq, level-1) for subseq in DIR_KEYPAD[(i, j)]])
+        return strokes
