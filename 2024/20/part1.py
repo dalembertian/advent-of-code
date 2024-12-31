@@ -32,6 +32,9 @@ def main(args):
         p, c = try_cheat(maze, cheat, start, finish)
         saves.append(cost - c)
     # saves.sort()
+    # groups = defaultdict(int)
+    # for s in saves: groups[s] += 1
+    # for g in groups.keys(): print(f'{groups[g]} cheats saving {g} picosseconds')
 
     print(f'Part 1 - Cheats that save at least 100 picosseconds: {len([s for s in saves if s >= 100])}')
 
