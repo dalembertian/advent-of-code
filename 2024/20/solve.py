@@ -6,7 +6,18 @@ import re
 
 from collections import defaultdict
 
-from dijkstra import *
+MOVEMENTS = {
+    '^': ( 0, -1),
+    '>': ( 1,  0),
+    'v': ( 0,  1),
+    '<': (-1,  0),
+}
+OPPOSITE = {
+    '^': 'v',
+    '>': '<',
+    'v': '^',
+    '<': '>',
+}
 
 
 def main(args):
@@ -14,105 +25,51 @@ def main(args):
     start  = find_element('S', maze)[0]
     finish = find_element('E', maze)[0]
 
-    nodes = defaultdict(dict)
-    find_path(start, start, '', maze, nodes)
-    find_shortest_path(start, nodes)
-    # print_nodes(nodes)
-
-    path, cost = trace_back(start, finish, nodes)
+    path, visited = find_path(start, finish, maze)
     # plot(maze, invisible_walls=True, path=path)
-    # print(f'Cost by Dijkstra: {cost}')
-    # print(f'Nodes: {len(nodes)}')
+    # print(f'Start: {start}, Finish: {finish}, Length: {len(path)}, {len(visited)}\n')
 
-    cheats = find_cheats(maze, start, path)
-    # print(cheats)
-
-    saves = []
-    for cheat in cheats:
-        p, c = try_cheat(maze, cheat, start, finish)
-        saves.append(cost - c)
-    # saves.sort()
-
+    cheats = find_cheats(start, 2, visited, maze)
+    saves = sorted(cheats.values())
     print(f'Part 1 - Cheats that save at least 100 picosseconds: {len([s for s in saves if s >= 100])}')
 
-def try_cheat(maze, cheat, start, finish):
-    maze = [maze[y][:] for y in range(len(maze))]
-    x, y = cheat
-    maze[y][x] = '.'
+    cheats = find_cheats(start, 20, visited, maze)
+    saves = sorted(cheats.values())
+    print(f'Part 2 - Cheats that save at least 100 picosseconds: {len([s for s in saves if s >= 100])}')
+    # groups = defaultdict(int)
+    # for s in saves: groups[s] += 1
+    # for g in groups.keys(): print(f'{groups[g]} cheats saving {g} picosseconds')
 
-    nodes = defaultdict(dict)
-    find_path(start, start, '', maze, nodes)
-    find_shortest_path(start, nodes)
-    path, cost = trace_back(start, finish, nodes)
-    # plot(maze, invisible_walls=True, path=path)
-    # print(f'Cost by Dijkstra: {cost}')
-    # input()
-    return path, cost
+def find_cheats(start, radius, visited, maze):
+    cheats = {}
+    size = len(maze[0]) - 1
+    for this, i in visited.items():
+        for dx in range(-radius, radius+1):
+            for dy in range(-radius, radius+1):
+                x, y = this
+                taxi = abs(dx)+abs(dy)
+                if taxi <= radius and x+dx > 0 and x+dx < size and y+dy > 0 and y+dy < size:
+                    cheat = (x+dx, y+dy)
+                    visit = visited.get(cheat, 0)
+                    if visit > taxi + i:
+                        cheats[(this,cheat)] = visit - i - taxi
+    return cheats
 
-def find_cheats(maze, start, path):
-    x, y = start
-    cheats = []
-    for move in path:
-        for dx, dy in [(i, j) for m, (i, j) in MOVEMENTS.items() if m != move]:
-            if maze[y+dy][x+dx] == '#' and maze[y+2*dy][x+2*dx] != '#':
-                cheats.append((x+dx, y+dy))
-        dx, dy = MOVEMENTS[move]
-        x, y = x+dx, y+dy
-    return set(cheats)
-
-def find_path(this, prev, path, maze, nodes):
-    x, y = this
+def find_path(start, finish, maze):
+    visited = {start: 0}
+    i = 0
+    path = ''
+    this = start
     moves = moves_from_here(this, path, maze)
-
-    # If this is a visited node (or END), just update the way here
-    if maze[y][x] == 'E' or this in nodes.keys():
-        add_node(this, prev, path, nodes)
-        return
-
-    # print_nodes(nodes)
-    # plot(maze, start=(x, y), path=path)
-    # print(f'FIND PATH - this: {this}, prev: {prev}, path: {path}, moves: {moves}')
-    # input()
-
-    # If it's a single path ahead, keep moving
-    while len(moves) == 1:
+    while this != finish:
+        i += 1
         move = moves[0]
         path += move
-        dx, dy = MOVEMENTS[move]
-        x, y, m = x+dx, y+dy, move
-        this = (x, y)
-        if maze[y][x] == 'E':
-            add_node(this, prev, path, nodes)
-            return
+        (x, y), (dx, dy) = this, MOVEMENTS[move]
+        this = (x+dx, y+dy)
+        visited[this] = i
         moves = moves_from_here(this, path, maze)
-
-    # If it's a new node, assess each path coming out of it
-    if len(moves) > 1:
-        if this in nodes.keys():
-            add_node(this, prev, path, nodes)
-        else:
-            # print(f'NEW NODE - this: {this}, prev: {prev}, path: {path}')
-            add_node(this, prev, path, nodes)
-            for move in moves:
-                dx, dy = MOVEMENTS[move]
-                nodes[this].setdefault('nodes', {})
-                find_path((x+dx, y+dy), this, move, maze, nodes)
-
-    # If there are no moves to be made, it's a dead end, ignore
-
-def add_node(this, prev, path, nodes):
-    if this == prev:
-        return
-
-    prev_nodes = nodes[prev].setdefault('nodes', {})
-    this_nodes = nodes[this].setdefault('nodes', {})
-    cost = len(path)
-
-    # Only add a node if it's shorter then prev parallel one
-    old_cost, old_path = this_nodes.get(prev, (INFINITE, ''))
-    if cost < old_cost:
-        nodes[prev]['nodes'][this] = (cost, path)
-        nodes[this]['nodes'][prev] = (cost, invert_path(path))
+    return path, visited
 
 def moves_from_here(this, path, maze):
     x, y = this
@@ -151,10 +108,7 @@ def plot_ruler(maze):
 
 def read_maze(filename):
     with open(filename) as lines:
-        maze = [['#'] + [p for p in line.strip()] + ['#'] for line in lines]
-    maze.insert(0, ['#'] * len(maze[0]))
-    maze.append(['#'] * len(maze[0]))
-    return maze
+        return [[p for p in line.strip()] for line in lines]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
