@@ -2,66 +2,34 @@
 # encoding: utf-8
 
 from argparse import ArgumentParser
-from collections import defaultdict, deque
-from re import compile
+from functools import cache
+
+DESIGNS = []
 
 def main(args):
-    designs, patterns = read_lines(args.filename)
-    # print(designs)
-    # print(patterns)
-    # print()
+    patterns = read_lines(args.filename)
+    ways = [search_for_pattern(0, pattern) for pattern in patterns]
 
-    print(f'Part 1 - {[search_for_pattern(pattern, designs) for pattern in patterns].count(1)} designs are possible.')
+    print(f'Part 1 - possible patterns: {len([w for w in ways if w > 0])}')
+    print(f'Part 2 - different ways to make patterns: {sum(ways)}')
 
-    # for pattern in patterns:
-    #     if search_for_pattern(pattern, designs):
-    #         print(f'{pattern} can be done in {search_for_pattern(pattern, designs, count=True)}')
-
-    print(f'Part 2 - different ways to make designs: {sum([search_for_pattern(pattern, designs, count=True) for pattern in patterns])}')
-
-def search_for_pattern(pattern, designs, count=False):
-    length = len(pattern)
-    success = 0
-
-    # print(pattern)
-    attempts = deque([(design, 0) for design in designs[pattern[0]] if pattern.startswith(design)])
-    while attempts:
-        # if count:
-        #     print(attempts)
-        design, index = attempts.popleft()
-        i = 0
-        while i < len(design):
-            if index + i == length or design[i] != pattern[index + i]:
-                break
-            i += 1
-        if i == len(design):
-            if index + i == length:
-                if count:
-                    success += 1
-                    # print(f'success :{success}!')
-                    while attempts and attempts[0][0][0] == pattern[index]:
-                        attempts.popleft()
-                else:
-                    return 1
-            else:
-                j = index + i
-                attempts.extendleft([(design, j) for design in designs[pattern[j]] if pattern[j:].startswith(design) and len(design) <= length-j])
-    return success
+@cache
+def search_for_pattern(start, pattern):
+    if start == len(pattern):
+        return 1
+    ways = 0
+    for design, length in DESIGNS:
+        if pattern[start:start+length] == design:
+            ways += search_for_pattern(start + length, pattern)
+    return ways
 
 def read_lines(filename):
-    patterns = []
-    designs = defaultdict(list)
     with open(filename) as input:
-        raw_designs = [design.strip() for design in input.readline().strip().split(',')]
-        for design in raw_designs:
-            designs[design[0]].append(design)
-        for k, v in designs.items():
-            v.sort(key=lambda e: len(e), reverse=True)
-
+        designs = [(d.strip(), len(d.strip())) for d in input.readline().strip().split(',')]
         input.readline()
-        for line in input.readlines():
-            patterns.append(line.strip())
-    return designs, patterns
+        patterns = [line.strip() for line in input.readlines()]
+    DESIGNS.extend(designs)
+    return patterns
 
 if __name__ == '__main__':
     parser = ArgumentParser()
