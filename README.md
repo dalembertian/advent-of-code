@@ -6,4 +6,4 @@ https://adventofcode.com/2024/
 
 ![Advent of Code 2024](/2024/AoC_2024_image.png)
 
-[^1]: Maybe because of the, the "curse of Day 19" kicked in and it was the last one I did... 🙄
+[^1]: Maybe because of this, the "curse of Day 19" kicked in and it was the last one I managed to do... 🙄
