@@ -2,6 +2,8 @@
 
 I have never participated in the AoC before, started this year (2024). It was WAY more work than I expected, but it was fun and enriching. I accidentally did Day 19 from 2015 - it was linked and I thought it was part of it[^1]! 😀🤦🏻‍♂️
 
+**SPOILER ALERT**: some personal insights below, under the image.
+
 https://adventofcode.com/2024/
 
 ![Advent of Code 2024](/2024/AoC_2024_image.png)
@@ -18,4 +20,4 @@ Some insights after completing this challenge:
 
 * All in all, it was great. I loved to check others' solutions after I did mine, and I learned a lot in doing so, from simple Python tricks to really cool and elegant solutions. I don't think I'll be able to do another one end-to-end without risking a divorce, but let's see by December 2025!
 
-[^1]: Maybe because of the, the "curse of Day 19" kicked in and it was the last one I did... 🙄
+[^1]: Maybe because of this, the "curse of Day 19" kicked in, and the 19th of 2024 was the last day I managed to complete... 🙄
