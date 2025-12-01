@@ -1,6 +1,12 @@
-# Advent of Code
+# Advent of Code 2025
 
-I have never participated in the AoC before, started this year (2024). It was WAY more work than I expected, but it was fun and enriching. I accidentally did Day 19 from 2015 - it was linked and I thought it was part of it[^1]! 😀🤦🏻‍♂️
+Will I continue, after day 1? Not sure - it's a lot of work, and this year it's going to be only 12 days, so I assume the steep difficulty curve will start much sooner.
+
+We'll see...
+
+# Advent of Code 2024
+
+I have never participated in the AoC before. It was WAY more work than I expected, but it was fun and enriching. I accidentally did Day 19 from 2015 - it was linked and I thought it was part of it[^1]! 😀🤦🏻‍♂️
 
 **SPOILER ALERT**: some personal insights below, under the image.
 
