@@ -25,36 +25,26 @@ def main(args):
     # Correct: 19058204438
     print(f'Part 2 - sum of invalid IDs: {sum(invalid_ids_2)}')
 
-def invalid_id_1(i):
+def invalid_id_1(id):
     # If ID has an odd length, or halves don't match, it's valid
-    s = str(i)
+    s = str(id)
     l = len(s)
     if l % 2 == 1 or s[:l // 2] != s[l // 2:]:
         return False
     else:
         return True
 
-def invalid_id_2(i):
+def invalid_id_2(id):
     # Assuming input has ranges with max 10-digits-long numbers
-    s = str(i)
+    s = str(id)
     l = len(s)
 
-    if l == 1:
-        return False
-    if l == 10 and repetead_segments(s, 5):
-        return True
-    elif (l == 9 or l == 6) and repetead_segments(s, 3):
-        return True
-    elif l == 8 and repetead_segments(s, 4):
-        return True
-    if l > 2 and l % 2 == 0 and repetead_segments(s, 2):
-        return True
-    if repetead_segments(s, 1):
-        return True
+    # Test possible chunk sizes, from 1 to half the size of the string
+    for k in range(l // 2, 0, -1):
+        if l % k == 0:
+            if s == s[:k] * (len(s) // k):
+                return True
     return False
-
-def repetead_segments(s, l):
-    return s == s[:l] * (len(s) // l)
 
 def read_lines(filename):
     with open(filename) as lines:
