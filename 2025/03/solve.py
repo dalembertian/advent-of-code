@@ -17,9 +17,10 @@ def find_bests(banks, size):
     for bank in banks:
         best = bank[:size]
         last_considered = 0
-        l = len(bank)
-        for i in range(1, l):
-            first_possible_digit = max(0, size - l + i)
+        for i in range(1, len(bank)):
+            # if there's not enough batteries left
+            first_possible_digit = max(0, size - len(bank) + i)
+            # if a battery has just been replaced
             last_possible_digit = min(last_considered, size - 1)
             for j in range(first_possible_digit, last_possible_digit + 1):
                 if best[j] < bank[i]:
