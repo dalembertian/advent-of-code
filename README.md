@@ -4,6 +4,11 @@ Will I continue, after day 1? Not sure - it's a lot of work, and this year it's 
 
 We'll see...
 
+https://adventofcode.com/2025/
+
+![Advent of Code 2025](/2025/AoC_2025_image.png)
+
+
 # Advent of Code 2024
 
 I have never participated in the AoC before. It was WAY more work than I expected, but it was fun and enriching. I accidentally did Day 19 from 2015 - it was linked and I thought it was part of it[^1]! 😀🤦🏻‍♂️
