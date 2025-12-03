@@ -6,47 +6,29 @@ import argparse
 def main(args):
     banks = read_lines(args.filename)
 
+    # Correct: 17435
+    print(f'Part 1 - total joltage: {sum([int(x) for x in find_bests(banks, 2)])}')
+
+    # Correct: 172886048065379
+    print(f'Part 2 - total joltage: {sum([int(x) for x in find_bests(banks, 12)])}')
+
+def find_bests(banks, size):
     bests = []
     for bank in banks:
-        best = bank[:2]
+        best = bank[:size]
+        last_considered = 0
         l = len(bank)
-        for i in range(2, l):
-            # print(f'{best} - {bank[i]}', end=' ')
-            if i < l - 1 and bank[i] > best[0]:
-                best = bank[i:i+2]
-            elif bank[i] > best[1]:
-                best = best[0] + bank[i]
-        # print()
-        # print(best)
-        # print()
+        for i in range(1, l):
+            first_possible_digit = max(0, size - l + i)
+            last_possible_digit = min(last_considered, size - 1)
+            for j in range(first_possible_digit, last_possible_digit + 1):
+                if best[j] < bank[i]:
+                    best = best[:j] + bank[i:i+size-j]
+                    last_considered = j
+                    break
+            last_considered += 1
         bests.append(best)
-
-    # Correct: 17435
-    print(f'Part 1 - total joltage: {sum([int(x) for x in bests])}')
-
-    # Correct:
-    # print(f'Part 2 - total joltage: {}')
-
-def invalid_id_1(id):
-    # If ID has an odd length, or halves don't match, it's valid
-    s = str(id)
-    l = len(s)
-    if l % 2 == 1 or s[:l // 2] != s[l // 2:]:
-        return False
-    else:
-        return True
-
-def invalid_id_2(id):
-    # Assuming input has ranges with max 10-digits-long numbers
-    s = str(id)
-    l = len(s)
-
-    # Test possible chunk sizes, from 1 to half the size of the string
-    for k in range(l // 2, 0, -1):
-        if l % k == 0:
-            if s == s[:k] * (len(s) // k):
-                return True
-    return False
+    return bests
 
 def read_lines(filename):
     with open(filename) as lines:
