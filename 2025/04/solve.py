@@ -3,13 +3,20 @@
 
 import argparse
 
+
 def main(args):
     rows = read_lines(args.filename)
 
-    accessibles = check_accessibles(rows)
-
     # Correct: 1384
-    print(f'Part 1 - accessible rolls: {len(accessibles)}')
+    total = check_accessibles(rows)
+    print(f'Part 1 - accessible rolls: {total}')
+
+    # Correct: 8013
+    iterations = 1
+    while accessibles := check_accessibles(rows):
+        total += accessibles
+        iterations += 1
+    print(f'Part 2 - total accessible rolls (after {iterations} iterations): {total}')
 
 def check_accessibles(rows):
     accessibles = []
@@ -17,12 +24,10 @@ def check_accessibles(rows):
         for j in range(1, len(rows[i]) - 1):
             if accessible(rows, i, j):
                 accessibles.append((i,j))
-
-    for pair in accessibles:
+    for i, j in accessibles:
         rows[i][j] = '.'
-    for row in rows:
-        print(row)
-    return accessibles
+    return len(accessibles)
+
 
 def accessible(rows, i, j):
     if rows[i][j] != '@':
@@ -36,6 +41,7 @@ def accessible(rows, i, j):
                     return False
     return True
 
+
 def read_lines(filename):
     rows = []
     with open(filename) as lines:
@@ -45,6 +51,7 @@ def read_lines(filename):
     rows.insert(0, list(boundary))
     rows.append(list(boundary))
     return rows
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
