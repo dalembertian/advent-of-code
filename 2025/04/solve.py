@@ -18,6 +18,7 @@ def main(args):
         iterations += 1
     print(f'Part 2 - total accessible rolls (after {iterations} iterations): {total}')
 
+
 def check_accessibles(rows):
     accessibles = []
     for i in range(1, len(rows) -1):
