@@ -10,13 +10,13 @@ class TreeNode:
         self.left = None
         self.right = None
 
+
 def main(args):
     freshes, ingredients = read_lines(args.filename)
     
     root = TreeNode(freshes[0])
     for fresh in freshes:
-        a, b = fresh
-        insert_node(a, b, root)
+        insert_node(fresh, root)
 
     # Correct: 567
     print(f'Part 1 - fresh ingredients: {sum([find_element(i, root) for i in ingredients])}')
@@ -34,20 +34,21 @@ def find_element(e, node):
         return find_element(e, node.right)
 
 
-def insert_node(a, b, parent):
-    pa, pb = parent.data
-    if a >= pa and b <= pb:
+def insert_node(pair, node):
+    a, b = pair
+    na, nb = node.data
+    if a >= na and b <= nb:
         return
-    if a < pa:
-        if parent.left:
-            insert_node(a, b, parent.left)
+    if a < na:
+        if node.left:
+            insert_node(pair, node.left)
         else:
-            parent.left = TreeNode((a,b))
-    if b > pb:
-        if parent.right:
-            insert_node(a, b, parent.right)
+            node.left = TreeNode((a,b))
+    if b > nb:
+        if node.right:
+            insert_node(pair, node.right)
         else:
-            parent.right = TreeNode((a,b))
+            node.right = TreeNode((a,b))
 
 
 def show_tree(node, level=0, prefix=''):
