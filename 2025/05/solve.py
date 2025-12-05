@@ -21,6 +21,39 @@ def main(args):
     # Correct: 567
     print(f'Part 1 - fresh ingredients: {sum([find_element(i, root) for i in ingredients])}')
 
+    ranges = []
+    for fresh in freshes:
+        insert_range(fresh, ranges)
+
+    # Correct: 354149806372909
+    print(f'Part 2 - total fresh ingredients: {sum([b-a+1 for a,b in ranges])}')
+
+    # Alternative way to check ingredients after Part 2
+    fresh_total = 0
+    for ingredient in ingredients:
+        for r in ranges:
+            if r[0] <= ingredient <= r[1]:
+                fresh_total += 1
+                break
+    print(f'Part 1 - alternative: {fresh_total}')
+
+
+def insert_range(new, existing):
+    i = 0
+    while i < len(existing):
+        a, b = existing[i]
+        na, nb = new
+        if nb < a:
+            existing.insert(i, new)
+            return
+        if na > b:
+            i += 1
+        else:
+            # nb >= a and na <= b
+            this = existing.pop(i)
+            new = (min(this[0], na), max(this[1], nb))
+    existing.append(new)
+
 
 def find_element(e, node):
     if not node:
