@@ -8,32 +8,34 @@ from functools import reduce
 
 
 def main(args):
-    operands, operators = read_lines(args.filename)
+    lines, operators = read_lines(args.filename)
     
-    for operand in operands:
-        print(operand)
-    print(operators)
+    # Correct:   5782351442566
+    print(f'Part 1 - total: {compute_operations(operands_per_line(lines), operators)}')
 
+
+def compute_operations(operands, operators):
     total = 0
     for i in range(len(operators)):
         if operators[i] == '+':
             total += reduce(lambda x, y: x + y, [o[i] for o in operands])
         else:
             total += reduce(lambda x, y: x * y, [o[i] for o in operands])
+    return total
 
-    # Correct:   5782351442566
-    print(f'Part 1 - total: {total}')
+
+def operands_per_line(lines):
+    valid = re.compile(r'[\d]+')
+    return [[int(e) for e in re.findall(valid, line)] for line in lines]
 
 
 def read_lines(filename):
-    valid = re.compile(r'[\d\+\*]+')
+    valid = re.compile(r'[\+\*]+')
     elements = []
     with open(filename) as lines:
-        for line in lines:
-            elements.append(re.findall(valid, line))
-    operators = elements.pop()
-    operands = [[int(e) for e in line] for line in elements]
-    return operands, operators
+        lines = lines.readlines()
+    operators = re.findall(valid, lines.pop())
+    return lines, operators
 
 
 if __name__ == '__main__':
