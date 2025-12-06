@@ -1,6 +1,6 @@
 # Advent of Code 2025
 
-Will I continue, after day 1? Not sure - it's a lot of work, and this year it's going to be only 12 days, so I assume the steep difficulty curve will start much sooner.
+How long will I last this year? Not sure - it's a lot of work, and since it's going to be only 12 days, I assume the steep difficulty curve will start much sooner.
 
 We'll see...
 
