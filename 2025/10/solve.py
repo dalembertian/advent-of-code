@@ -17,20 +17,22 @@ def main(args):
     sequences = find_best_sequence(machines)
 
     # Correct: 532
-    print(f'Part 1 - fewest presses: {sum(len(s) for s in sequences)}')
-    
+    print(f'Part 1 - fewest presses: {sum(s for s in sequences)}')
+
 
 def find_best_sequence(machines):
+    # Insight: pressing a button twice makes no difference, so all we need to consider is all possible
+    # combinations of buttons, pressed once or none.
     sequences = []
     for machine in machines:
-        outputs = defaultdict(list)
+        outputs = defaultdict(int)
         combos = [list(combinations(machine.buttons, length)) for length in range(1, len(machine.buttons) + 1)]
+        # TODO: really weird list comprehension to flatten out a list of lists
         combos = [list(sublist) for g in combos for sublist in g]  
         for combo in combos:
             output = reduce(lambda x, y: x ^ y, combo)
-            if len(outputs[output]) == 0 or len(outputs[output]) > len(combo):
-                outputs[output].clear()
-                outputs[output].extend(combo)
+            if outputs[output] == 0 or outputs[output] > len(combo):
+                outputs[output] = len(combo)
         sequences.append(outputs[machine.goal])
     return sequences
 
