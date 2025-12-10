@@ -3,6 +3,7 @@
 
 import argparse
 import re
+import z3
 
 from collections import namedtuple, defaultdict
 from itertools import combinations 
@@ -14,13 +15,46 @@ Machine = namedtuple('Machine', ['goal', 'buttons', 'joltage'])
 
 def main(args):
     machines = read_lines(args.filename)
-    sequences = find_best_sequence(machines)
 
     # Correct: 532
-    print(f'Part 1 - fewest presses: {sum(s for s in sequences)}')
+    sequences = find_best_for_goal(machines)
+    print(f'Part 1 - fewest presses for goals: {sum(sequences)}')
+
+    # Correct: 18387
+    sequences = find_best_for_joltage(machines)
+    print(f'Part 2 - fewest presses for joltages: {sum(sequences)}')
 
 
-def find_best_sequence(machines):
+def find_best_for_joltage(machines):
+    # from @jonathanpaulson5053
+    # brew install z3
+    # pip install z3-solver
+    sequences = []
+    for machine in machines:
+        B = [z3.Int(f'B{i}') for i in range(len(machine.buttons))]
+        EQ = []
+        for i in range(len(machine.joltage)):
+            terms = []
+            for j in range(len(machine.buttons)):
+                if machine.buttons[j] & 2**i:
+                    terms.append(B[j])
+            eq = (sum(terms) == machine.joltage[i])
+            EQ.append(eq)
+        o = z3.Optimize()
+        o.minimize(sum(B))
+        for eq in EQ:
+            o.add(eq)
+        for b in B:
+            o.add(b >= 0)
+        assert o.check()
+        M = o.model()
+        for d in M.decls():
+            # print(d.name(), M[d])
+            sequences.append(M[d].as_long())
+    return sequences
+
+
+def find_best_for_goal(machines):
     # Insight: pressing a button twice makes no difference, so all we need to consider is all possible
     # combinations of buttons, pressed once or none.
     sequences = []
