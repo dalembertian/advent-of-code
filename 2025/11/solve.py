@@ -5,21 +5,31 @@ import argparse
 
 from collections import deque, defaultdict
 
+from dijkstra import *
+
 
 def main(args):
     nodes = read_lines(args.filename)
 
-    # for key in nodes.keys():
-    #     print(f'{key}: {','.join(nodes[key]['next'])}')
-    # print()
-
     # Correct: 764
+    # print(is_cyclic(nodes, 'you'))
     explore_nodes(nodes, 'you')
-    print(f'Part 1 - exit paths: {len(nodes['out'].get('previous', []))}')
+    print(f'Part 1 - exit paths from \'you\': {len(nodes['out'].get('previous', []))}')
 
+    # Correct: 
+    nodes['out'] = {}
+    find_shortest_path(nodes, 'svr')
+    print_nodes(nodes)
+    print_paths(nodes, 'out')
+
+    print(f'Part 2 - exit paths from \'svr\' passing by \'dac\' and \'fft\': {len(nodes['out'].get('previous', []))}')
 
 def explore_nodes(nodes, start):
     # BFS traverse of nodes
+
+    for node in nodes.keys():
+        nodes[node].get('previous', []).clear()
+
     V = deque([start])
     while V:
         v = V.popleft()
@@ -41,14 +51,17 @@ def is_current_cyclic(nodes, start, visited, current):
     # If already visited in this current check, it's cyclic
     if start in current:
         return True
+
     # If already visited previously, no need to check it again
     if start in visited:
         return False
+
     current.append(start)
     visited.append(start)
     links = nodes[start].get('next', [])
     if any([is_current_cyclic(nodes, link, visited, current) for link in links]):
         return True
+
     # Remove from current check before returning
     current.remove(start)
     return False
