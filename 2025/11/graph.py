@@ -8,18 +8,17 @@ from collections import deque
 INFINITE = float('inf')
 
 
-def map_previous_nodes(nodes, start):
-    # BFS traverse of nodes
-
-    for node in nodes.keys():
-        nodes[node].get('previous', []).clear()
-
-    V = deque([start])
-    while V:
-        v = V.popleft()
-        for node in nodes[v].get('next', []):
-            nodes[node].setdefault('previous', []).append(v)
-            V.append(node)
+def count_paths(nodes, passing_by):
+    first, second = passing_by
+    runs = [['svr', first, second, 'out'], ['svr', second, first, 'out']]
+    total = 0
+    for run in runs:
+        subtotal = 1
+        for i in range(3):
+            find_shortest_path(nodes, run[i])
+            subtotal *= nodes[run[i+1]].get('count', 0)
+        total += subtotal
+    return total
 
 
 def find_shortest_path(nodes, start, record_paths = False):

@@ -2,14 +2,17 @@
 # encoding: utf-8
 
 import argparse
-
 from collections import defaultdict
+from functools import cache
 
 from graph import *
 
 
+nodes = defaultdict(dict)
+
+
 def main(args):
-    nodes = read_lines(args.filename)
+    nodes.update(read_lines(args.filename))
 
     # Correct: 764
     # print(is_cyclic(nodes, 'you'))
@@ -22,22 +25,34 @@ def main(args):
     # print()
 
     # Incorrect: 4563341276580 (too low)
+    # After struggling with this modified Dijkstra, I can't find what's wrong. Movingn on to a cached solution...
     print(f'Part 2 - exit paths from \'svr\' passing by \'dac\' and \'fft\': {count_paths(nodes, ['dac', 'fft'])}')
 
     # Correct: 462444153119850
+    paths = (traverse_next_nodes('svr', 'dac') * traverse_next_nodes('dac', 'fft') * traverse_next_nodes('fft', 'out')
+           + traverse_next_nodes('svr', 'fft') * traverse_next_nodes('fft', 'dac') * traverse_next_nodes('dac', 'out'))
+    print(f'Part 2 - exit paths from \'svr\' passing by \'dac\' and \'fft\': {paths}')
 
 
-def count_paths(nodes, passing_by):
-    first, second = passing_by
-    runs = [['svr', first, second, 'out'], ['svr', second, first, 'out']]
-    total = 0
-    for run in runs:
-        subtotal = 1
-        for i in range(3):
-            find_shortest_path(nodes, run[i])
-            subtotal *= nodes[run[i+1]].get('count', 0)
-        total += subtotal
-    return total
+@cache
+def traverse_next_nodes(start, finish):
+    if start == finish:
+        return 1
+    return sum([traverse_next_nodes(node, finish) for node in nodes[start].get('next', [])])
+
+
+def map_previous_nodes(nodes, start):
+    # BFS traverse of nodes
+
+    for node in nodes.keys():
+        nodes[node].get('previous', []).clear()
+
+    V = deque([start])
+    while V:
+        v = V.popleft()
+        for node in nodes[v].get('next', []):
+            nodes[node].setdefault('previous', []).append(v)
+            V.append(node)
 
 
 def read_lines(filename):
