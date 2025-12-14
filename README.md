@@ -1,8 +1,10 @@
 # Advent of Code 2025
 
-How long will I last this year? Not sure - it's a lot of work, and since it's going to be only 12 days, I assume the steep difficulty curve will start much sooner.
+To my own surprise, I ended up working on all challenges this year. I think it's actually a good idea to have less days, since closer to Christmas there's too much going to be able to dedicate so much time.
 
-We'll see...
+I couldn't solve some of the problems: I still have no idea how to solve efficiently Day 9 Part 2, and I needed help to implement the linear programming approach for Day 10 Part 2. I completed these two by looking at other people's code, just so I could see the always cool animation at the end!
+
+Like last year, it was great as a "refresher" and also to learn a few new tricks (like the awesome Z3 framework).
 
 https://adventofcode.com/2025/
 
